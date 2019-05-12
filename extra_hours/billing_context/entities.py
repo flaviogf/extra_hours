@@ -1,12 +1,19 @@
+import uuid
 from datetime import datetime
 
 from pyflunt.notifications import Notifiable
 from pyflunt.validations import Contract
 
 
-class Billing(Notifiable):
-    def __init__(self, title, description, value, work_date=None):
+class Entity(Notifiable):
+    def __init__(self, id=None):
         super().__init__()
+        self.id = id or uuid.uuid4()
+
+
+class Billing(Entity):
+    def __init__(self, title, description, value, work_date=None, id=None):
+        super().__init__(id=id)
         self._title = title
         self._description = description
         self._value = value
@@ -48,3 +55,13 @@ class Billing(Notifiable):
 
     def cancel_receive(self):
         self._received_date = None
+
+
+class User(Entity):
+    def __init__(self, id=None):
+        super().__init__(id=id)
+        self._billing = []
+
+    @property
+    def billing(self):
+        return self._billing

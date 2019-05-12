@@ -1,7 +1,8 @@
 import unittest
+import uuid
 from datetime import datetime
 
-from extra_hours.billing_context.entities import Billing
+from extra_hours.billing_context.entities import Billing, User
 
 
 class BillingTests(unittest.TestCase):
@@ -77,3 +78,17 @@ class BillingTests(unittest.TestCase):
         self._billing.cancel_receive()
 
         self.assertFalse(self._billing.received)
+
+
+class UserTests(unittest.TestCase):
+    def setUp(self):
+        self._user_id = uuid.uuid4()
+
+        self._batman = User(id=self._user_id)
+
+    def test_should_create_user_when_all_information_is_valid(self):
+        self.assertEqual(self._user_id, self._batman.id)
+        self.assertTrue(self._batman.is_valid)
+
+    def test_should_billing_is_empty_list_when_user_is_created(self):
+        self.assertListEqual([], self._batman.billing)
