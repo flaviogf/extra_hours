@@ -6,14 +6,17 @@ from pyflunt.validations import Contract
 
 
 class Entity(Notifiable):
-    def __init__(self, id=None):
+    def __init__(self, uid=None):
         super().__init__()
-        self.id = id or uuid.uuid4()
+        self.uid = uid or uuid.uuid4()
+
+    def __eq__(self, other):
+        return self.uid == other.uid
 
 
 class Billing(Entity):
-    def __init__(self, title, description, value, work_date=None, id=None):
-        super().__init__(id=id)
+    def __init__(self, title, description, value, work_date=None, uid=None):
+        super().__init__(uid=uid)
         self._title = title
         self._description = description
         self._value = value
@@ -58,10 +61,33 @@ class Billing(Entity):
 
 
 class User(Entity):
-    def __init__(self, id=None):
-        super().__init__(id=id)
+    def __init__(self, uid=None):
+        super().__init__(uid=uid)
         self._billing = []
 
     @property
     def billing(self):
-        return self._billing
+        return tuple(self._billing)
+
+    @property
+    def billing_received(self):
+        return tuple((it for it in self._billing if it.received))
+
+    @property
+    def billing_not_received(self):
+        return tuple((it for it in self._billing if not it.received))
+
+    def add_billing(self, billing):
+        self._billing.append(billing)
+
+    def confirm_receive(self, billing):
+        if billing not in self._billing:
+            return
+
+        billing.confirm_receive()
+
+    def cancel_receive(self, billing):
+        if billing not in self._billing:
+            return
+
+        billing.cancel_receive()
