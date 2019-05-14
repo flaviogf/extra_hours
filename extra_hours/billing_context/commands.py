@@ -11,3 +11,9 @@ class CreateBillingCommand:
     description: str
     value: float
     work_date: Optional[datetime]
+
+
+@dataclass()
+class ConfirmReceiveBillingCommand:
+    user_id: UUID
+    billing_id: UUID
