@@ -2,7 +2,19 @@ import uuid
 from datetime import datetime
 
 from pyflunt.notifications import Notifiable
-from pyflunt.validations import Contract
+
+from functools import wraps
+
+
+def verify_billing_owner(func):
+    @wraps(func)
+    def wrapper(self, billing, *args, **kwargs):
+        if billing not in self._billing:
+            return
+
+        return func(self, billing, *args, **kwargs)
+
+    return wrapper
 
 
 class Entity(Notifiable):
@@ -15,35 +27,28 @@ class Entity(Notifiable):
 
 
 class Billing(Entity):
-    def __init__(self, title, description, value, work_date=None, uid=None):
+    def __init__(self, summary, uid=None):
         super().__init__(uid=uid)
-        self._title = title
-        self._description = description
-        self._value = value
-        self._work_date = work_date or datetime.now()
+        self._summary = summary
         self._received_date = None
 
-        self.add_notifications(Contract()
-                               .requires()
-                               .has_min_len(title, 3, 'title', 'invalid title')
-                               .has_min_len(description, 3, 'description', 'invalid description')
-                               .is_greater_than(value, 0, 'value', 'invalid value'))
+        self.add_notifications(summary)
 
     @property
     def title(self):
-        return self._title
+        return self._summary.title
 
     @property
     def description(self):
-        return self._description
+        return self._summary.description
 
     @property
     def value(self):
-        return self._value
+        return self._summary.value
 
     @property
     def work_date(self):
-        return self._work_date
+        return self._summary.work_date
 
     @property
     def received_date(self):
@@ -58,6 +63,11 @@ class Billing(Entity):
 
     def cancel_receive(self):
         self._received_date = None
+
+    def update_summary(self, summary):
+        self._summary = summary
+
+        self.add_notifications(summary)
 
 
 class User(Entity):
@@ -80,14 +90,14 @@ class User(Entity):
     def add_billing(self, billing):
         self._billing.append(billing)
 
+    @verify_billing_owner
     def confirm_receive(self, billing):
-        if billing not in self._billing:
-            return
-
         billing.confirm_receive()
 
+    @verify_billing_owner
     def cancel_receive(self, billing):
-        if billing not in self._billing:
-            return
-
         billing.cancel_receive()
+
+    @verify_billing_owner
+    def update_billing_summary(self, billing, summary):
+        billing.update_summary(summary)

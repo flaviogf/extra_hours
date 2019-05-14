@@ -23,3 +23,13 @@ class ConfirmReceiveBillingCommand:
 class CancelReceiveBillingCommand:
     user_id: UUID
     billing_id: UUID
+
+
+@dataclass
+class UpdateBillingCommand:
+    user_id: UUID
+    billing_id: UUID
+    title: str
+    description: str
+    value: float
+    work_date: Optional[datetime]
