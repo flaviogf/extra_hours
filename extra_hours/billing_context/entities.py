@@ -14,10 +14,9 @@ class Entity(Notifiable):
 
 
 class Billing(Entity):
-    def __init__(self, summary, work_date=None, uid=None):
+    def __init__(self, summary, uid=None):
         super().__init__(uid=uid)
         self._summary = summary
-        self._work_date = work_date or datetime.now()
         self._received_date = None
 
         self.add_notifications(summary)
@@ -36,7 +35,7 @@ class Billing(Entity):
 
     @property
     def work_date(self):
-        return self._work_date
+        return self._summary.work_date
 
     @property
     def received_date(self):
@@ -51,6 +50,11 @@ class Billing(Entity):
 
     def cancel_receive(self):
         self._received_date = None
+
+    def update_summary(self, summary):
+        self._summary = summary
+
+        self.add_notifications(summary)
 
 
 class User(Entity):

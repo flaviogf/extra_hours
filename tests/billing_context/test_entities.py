@@ -32,10 +32,10 @@ class BillingTests(unittest.TestCase):
 
         self._billing_summary = BillingSummary(title='Gas station security',
                                                description='Gas station security yesterday',
-                                               value=100.50)
+                                               value=100.50,
+                                               work_date=self._yesterday)
 
-        self._billing = Billing(summary=self._billing_summary,
-                                work_date=self._yesterday)
+        self._billing = Billing(summary=self._billing_summary)
 
     def test_should_create_billing_when_all_information_is_valid(self):
         self.assertEqual('Gas station security', self._billing.title)
@@ -49,13 +49,16 @@ class BillingTests(unittest.TestCase):
                                          description='Gas station security yesterday',
                                          value=100.50)
 
-        billing = Billing(summary=billing_summary,
-                          work_date=self._yesterday)
+        billing = Billing(summary=billing_summary)
 
         self.assertFalse(billing.is_valid)
 
     def test_should_work_date_equal_to_today_when_billing_is_created_without_work_date(self):
-        billing = Billing(summary=self._billing_summary)
+        billing_summary = BillingSummary(title='Gas station security',
+                                         description='Gas station security yesterday',
+                                         value=100.50)
+
+        billing = Billing(summary=billing_summary)
 
         self.assertEqual(datetime.now().date(), billing.work_date.date())
 
@@ -89,6 +92,27 @@ class BillingTests(unittest.TestCase):
 
         self.assertFalse(self._billing.received)
 
+    def test_should_is_valid_true_when_update_summary_with_summary_updated_valid(self):
+        summary_updated = BillingSummary(title='Gym',
+                                         description='Tomorrow',
+                                         value=50)
+
+        self._billing.update_summary(summary_updated)
+
+        self.assertEqual('Gym', self._billing.title)
+        self.assertEqual('Tomorrow', self._billing.description)
+        self.assertEqual(50, self._billing.value)
+        self.assertTrue(self._billing.is_valid)
+
+    def test_should_is_valid_false_when_update_summary_with_summary_updated_not_valid(self):
+        summary_updated = BillingSummary(title='',
+                                         description='Tomorrow',
+                                         value=50)
+
+        self._billing.update_summary(summary_updated)
+
+        self.assertFalse(self._billing.is_valid)
+
 
 class UserTests(unittest.TestCase):
     def setUp(self):
@@ -98,10 +122,10 @@ class UserTests(unittest.TestCase):
 
         self._billing_summary = BillingSummary(title='Gas station security',
                                                description='Gas station security yesterday',
-                                               value=100.50)
+                                               value=100.50,
+                                               work_date=yesterday)
 
-        self._billing = Billing(summary=self._billing_summary,
-                                work_date=yesterday)
+        self._billing = Billing(summary=self._billing_summary)
 
         self._batman = User(uid=self._uid)
 

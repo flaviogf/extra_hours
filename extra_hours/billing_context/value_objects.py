@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pyflunt.notifications import Notifiable
 from pyflunt.validations import Contract
 
@@ -7,12 +9,13 @@ class ValueObject(Notifiable):
 
 
 class BillingSummary(ValueObject):
-    def __init__(self, title, description, value):
+    def __init__(self, title, description, value, work_date=None):
         super().__init__()
 
         self._title = title
         self._description = description
         self._value = value
+        self._work_date = work_date or datetime.now()
 
         self.add_notifications(Contract()
                                .requires()
@@ -31,3 +34,7 @@ class BillingSummary(ValueObject):
     @property
     def value(self):
         return self._value
+
+    @property
+    def work_date(self):
+        return self._work_date

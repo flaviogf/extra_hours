@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 
 from extra_hours.billing_context.value_objects import BillingSummary
 
@@ -34,3 +35,10 @@ class BillingSummaryTests(unittest.TestCase):
                                  value=0)
 
         self.assertFalse(summary.is_valid)
+
+    def test_should_work_date_equal_to_today_when_not_work_date_not_is_informed(self):
+        summary = BillingSummary(title='Gas station security',
+                                 description='Gas station security yesterday',
+                                 value=0)
+
+        self.assertEqual(datetime.now().date(), summary.work_date.date())

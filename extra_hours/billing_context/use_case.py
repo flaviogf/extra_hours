@@ -21,10 +21,10 @@ class CreateBilling(UseCase):
 
         summary = BillingSummary(title=command.title,
                                  description=command.description,
-                                 value=command.value)
+                                 value=command.value,
+                                 work_date=command.work_date)
 
-        billing = Billing(summary=summary,
-                          work_date=command.work_date)
+        billing = Billing(summary=summary)
 
         if not billing.is_valid:
             self.add_notifications(billing)
