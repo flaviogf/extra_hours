@@ -61,9 +61,9 @@ class Billing(Entity):
 
 
 class User(Entity):
-    def __init__(self, uid=None):
+    def __init__(self, billing=(), uid=None):
         super().__init__(uid=uid)
-        self._billing = []
+        self._billing = list(billing)
 
     @property
     def billing(self):
