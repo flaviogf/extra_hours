@@ -1,9 +1,15 @@
-from extra_hours.billing_context.commands import CommandResult
+from pyflunt.notifications import Notifiable
+
 from extra_hours.billing_context.entities import User, Billing
 
 
-class CreateBilling:
+class UseCase(Notifiable):
+    pass
+
+
+class CreateBilling(UseCase):
     def __init__(self, user_repository):
+        super().__init__()
         self._user_repository = user_repository
 
     def execute(self, command):
@@ -15,14 +21,10 @@ class CreateBilling:
                           work_date=command.work_date)
 
         if not user.is_valid or not billing.is_valid:
-            return CommandResult(success=False,
-                                 message='Billing not created',
-                                 data=user.notifications + billing.notifications)
+            self.add_notifications(user, billing)
+
+            return
 
         user.add_billing(billing)
 
         self._user_repository.save(user)
-
-        return CommandResult(success=True,
-                             message='Billing created with success',
-                             data=billing)

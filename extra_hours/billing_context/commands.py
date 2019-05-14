@@ -4,13 +4,6 @@ from typing import Optional
 from uuid import UUID
 
 
-@dataclass()
-class CommandResult:
-    success: bool
-    message: str
-    data: object
-
-
 @dataclass
 class CreateBillingCommand:
     user_id: UUID
