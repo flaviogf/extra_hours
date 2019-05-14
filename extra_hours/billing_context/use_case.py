@@ -56,3 +56,27 @@ class ConfirmReceiveBilling(UseCase):
         user.confirm_receive(billing)
 
         self._user_repository.save(user)
+
+
+class CancelReceiveBilling(UseCase):
+    def __init__(self, user_repository):
+        super().__init__()
+        self._user_repository = user_repository
+
+    def execute(self, command):
+        user = self._user_repository.find_by_id(command.user_id)
+
+        if not user:
+            self.add_notification(Notification('user', 'user not exists'))
+
+        billing = self._user_repository.find_billing_by_id(command.billing_id)
+
+        if not billing:
+            self.add_notification(Notification('billing', 'billing not exists'))
+
+        if not self.is_valid:
+            return
+
+        user.cancel_receive(billing)
+
+        self._user_repository.save(user)
