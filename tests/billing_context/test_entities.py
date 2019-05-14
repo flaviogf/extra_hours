@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 
 from extra_hours.billing_context.entities import Billing, User, Entity
+from extra_hours.billing_context.value_objects import BillingSummary
 
 
 class FakeEntity(Entity):
@@ -29,9 +30,11 @@ class BillingTests(unittest.TestCase):
     def setUp(self):
         self._yesterday = datetime(year=2019, month=6, day=13)
 
-        self._billing = Billing(title='Gas station security',
-                                description='Gas station security yesterday',
-                                value=100.50,
+        self._billing_summary = BillingSummary(title='Gas station security',
+                                               description='Gas station security yesterday',
+                                               value=100.50)
+
+        self._billing = Billing(summary=self._billing_summary,
                                 work_date=self._yesterday)
 
     def test_should_create_billing_when_all_information_is_valid(self):
@@ -41,10 +44,18 @@ class BillingTests(unittest.TestCase):
         self.assertEqual(self._yesterday, self._billing.work_date)
         self.assertTrue(self._billing.is_valid)
 
+    def test_should_is_valid_false_when_summary_not_is_valid(self):
+        billing_summary = BillingSummary(title='',
+                                         description='Gas station security yesterday',
+                                         value=100.50)
+
+        billing = Billing(summary=billing_summary,
+                          work_date=self._yesterday)
+
+        self.assertFalse(billing.is_valid)
+
     def test_should_work_date_equal_to_today_when_billing_is_created_without_work_date(self):
-        billing = Billing(title='Gas station security',
-                          description='Gas station security yesterday',
-                          value=100.50)
+        billing = Billing(summary=self._billing_summary)
 
         self.assertEqual(datetime.now().date(), billing.work_date.date())
 
@@ -53,27 +64,6 @@ class BillingTests(unittest.TestCase):
 
     def test_should_received_false_when_billing_is_created(self):
         self.assertFalse(self._billing.received)
-
-    def test_should_is_valid_false_when_title_not_has_min_len_3(self):
-        billing = Billing(title='',
-                          description='Gas station security yesterday',
-                          value=100.50)
-
-        self.assertFalse(billing.is_valid)
-
-    def test_should_is_valid_false_when_description_not_has_min_len_3(self):
-        billing = Billing(title='Gas station security',
-                          description='',
-                          value=100.50)
-
-        self.assertFalse(billing.is_valid)
-
-    def test_should_is_valid_false_when_value_is_not_greater_than_0(self):
-        billing = Billing(title='Gas station security',
-                          description='Gas station security yesterday',
-                          value=0)
-
-        self.assertFalse(billing.is_valid)
 
     def test_should_received_date_equal_to_date_today_when_confirm_receive(self):
         self._billing.confirm_receive()
@@ -106,9 +96,11 @@ class UserTests(unittest.TestCase):
 
         yesterday = datetime(year=2019, month=6, day=13)
 
-        self._billing = Billing(title='Gas station security',
-                                description='Gas station security yesterday',
-                                value=100.50,
+        self._billing_summary = BillingSummary(title='Gas station security',
+                                               description='Gas station security yesterday',
+                                               value=100.50)
+
+        self._billing = Billing(summary=self._billing_summary,
                                 work_date=yesterday)
 
         self._batman = User(uid=self._uid)

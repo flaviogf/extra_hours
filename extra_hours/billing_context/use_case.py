@@ -1,6 +1,7 @@
 from pyflunt.notifications import Notifiable, Notification
 
 from extra_hours.billing_context.entities import Billing
+from extra_hours.billing_context.value_objects import BillingSummary
 
 
 class UseCase(Notifiable):
@@ -18,9 +19,11 @@ class CreateBilling(UseCase):
         if not user:
             self.add_notification(Notification('user', 'user not exists'))
 
-        billing = Billing(title=command.title,
-                          description=command.description,
-                          value=command.value,
+        summary = BillingSummary(title=command.title,
+                                 description=command.description,
+                                 value=command.value)
+
+        billing = Billing(summary=summary,
                           work_date=command.work_date)
 
         if not billing.is_valid:

@@ -9,6 +9,7 @@ from extra_hours.billing_context.entities import User, Billing
 from extra_hours.billing_context.use_case import (CreateBilling,
                                                   ConfirmReceiveBilling,
                                                   CancelReceiveBilling)
+from extra_hours.billing_context.value_objects import BillingSummary
 
 
 class CreateBillingTests(unittest.TestCase):
@@ -62,9 +63,11 @@ class ConfirmReceiveBillingTests(unittest.TestCase):
     def setUp(self):
         self._steve = User()
 
-        self._billing = Billing(title='Gas station',
-                                description='Yesterday',
-                                value=100)
+        self._billing_summary = BillingSummary(title='Gas station security',
+                                               description='Gas station security yesterday',
+                                               value=100.50)
+
+        self._billing = Billing(summary=self._billing_summary)
 
         self._user_repository = Mock()
         self._user_repository.find_by_id.return_value = self._steve
@@ -116,9 +119,11 @@ class CancelReceiveBillingTests(unittest.TestCase):
     def setUp(self):
         self._steve = User()
 
-        self._billing = Billing(title='Gas station',
-                                description='Yesterday',
-                                value=100.99)
+        self._billing_summary = BillingSummary(title='Gas station security',
+                                               description='Gas station security yesterday',
+                                               value=100.50)
+
+        self._billing = Billing(summary=self._billing_summary)
 
         self._command = CancelReceiveBillingCommand(user_id=self._steve.uid,
                                                     billing_id=self._billing.uid)

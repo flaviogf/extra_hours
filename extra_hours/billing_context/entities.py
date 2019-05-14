@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime
 
 from pyflunt.notifications import Notifiable
-from pyflunt.validations import Contract
 
 
 class Entity(Notifiable):
@@ -15,31 +14,25 @@ class Entity(Notifiable):
 
 
 class Billing(Entity):
-    def __init__(self, title, description, value, work_date=None, uid=None):
+    def __init__(self, summary, work_date=None, uid=None):
         super().__init__(uid=uid)
-        self._title = title
-        self._description = description
-        self._value = value
+        self._summary = summary
         self._work_date = work_date or datetime.now()
         self._received_date = None
 
-        self.add_notifications(Contract()
-                               .requires()
-                               .has_min_len(title, 3, 'title', 'invalid title')
-                               .has_min_len(description, 3, 'description', 'invalid description')
-                               .is_greater_than(value, 0, 'value', 'invalid value'))
+        self.add_notifications(summary)
 
     @property
     def title(self):
-        return self._title
+        return self._summary.title
 
     @property
     def description(self):
-        return self._description
+        return self._summary.description
 
     @property
     def value(self):
-        return self._value
+        return self._summary.value
 
     @property
     def work_date(self):
