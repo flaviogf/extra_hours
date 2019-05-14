@@ -13,7 +13,13 @@ class CreateBillingCommand:
     work_date: Optional[datetime]
 
 
-@dataclass()
+@dataclass
 class ConfirmReceiveBillingCommand:
+    user_id: UUID
+    billing_id: UUID
+
+
+@dataclass
+class CancelReceiveBillingCommand:
     user_id: UUID
     billing_id: UUID
