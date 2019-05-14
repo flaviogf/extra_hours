@@ -194,3 +194,29 @@ class UserTests(unittest.TestCase):
         with self.subTest():
             for billing in self._batman.billing_not_received:
                 self.assertFalse(billing.received)
+
+    def test_should_update_billing_summary_when_billing_in_billing_list(self):
+        self._batman.add_billing(self._billing)
+
+        before_yesterday = datetime(2019, 1, 10)
+
+        summary_updated = BillingSummary(title='Gym',
+                                         description='Tomorrow',
+                                         value=100,
+                                         work_date=before_yesterday)
+
+        self._batman.update_billing_summary(self._billing, summary_updated)
+
+        self.assertEqual('Gym', self._billing.title)
+
+    def test_should_not_update_billing_summary_when_billing_not_in_billing_list(self):
+        before_yesterday = datetime(2019, 1, 10)
+
+        summary_updated = BillingSummary(title='Gym',
+                                         description='Tomorrow',
+                                         value=100,
+                                         work_date=before_yesterday)
+
+        self._batman.update_billing_summary(self._billing, summary_updated)
+
+        self.assertEqual('Gas station security', self._billing.title)

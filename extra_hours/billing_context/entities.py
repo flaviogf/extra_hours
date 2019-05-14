@@ -3,6 +3,19 @@ from datetime import datetime
 
 from pyflunt.notifications import Notifiable
 
+from functools import wraps
+
+
+def verify_billing_owner(func):
+    @wraps(func)
+    def wrapper(self, billing, *args, **kwargs):
+        if billing not in self._billing:
+            return
+
+        return func(self, billing, *args, **kwargs)
+
+    return wrapper
+
 
 class Entity(Notifiable):
     def __init__(self, uid=None):
@@ -77,14 +90,14 @@ class User(Entity):
     def add_billing(self, billing):
         self._billing.append(billing)
 
+    @verify_billing_owner
     def confirm_receive(self, billing):
-        if billing not in self._billing:
-            return
-
         billing.confirm_receive()
 
+    @verify_billing_owner
     def cancel_receive(self, billing):
-        if billing not in self._billing:
-            return
-
         billing.cancel_receive()
+
+    @verify_billing_owner
+    def update_billing_summary(self, billing, summary):
+        billing.update_summary(summary)
