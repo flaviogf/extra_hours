@@ -1,9 +1,8 @@
-import uuid
 from datetime import datetime
 
-from pyflunt.notifications import Notifiable
-
 from functools import wraps
+
+from extra_hours.shared_context.entities import Entity
 
 
 def verify_billing_owner(func):
@@ -15,15 +14,6 @@ def verify_billing_owner(func):
         return func(self, billing, *args, **kwargs)
 
     return wrapper
-
-
-class Entity(Notifiable):
-    def __init__(self, uid=None):
-        super().__init__()
-        self.uid = uid or uuid.uuid4()
-
-    def __eq__(self, other):
-        return self.uid == other.uid
 
 
 class Billing(Entity):
