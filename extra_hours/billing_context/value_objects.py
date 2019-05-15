@@ -1,11 +1,8 @@
 from datetime import datetime
 
-from pyflunt.notifications import Notifiable
 from pyflunt.validations import Contract
 
-
-class ValueObject(Notifiable):
-    pass
+from extra_hours.shared_context.value_objects import ValueObject
 
 
 class BillingSummary(ValueObject):
