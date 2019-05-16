@@ -1,11 +1,8 @@
-from pyflunt.notifications import Notifiable, Notification
+from pyflunt.notifications import Notification
 
 from extra_hours.billing_context.entities import Billing
 from extra_hours.billing_context.value_objects import BillingSummary
-
-
-class UseCase(Notifiable):
-    pass
+from extra_hours.shared_context.use_case import UseCase
 
 
 class CreateBilling(UseCase):
@@ -51,7 +48,8 @@ class ConfirmReceiveBilling(UseCase):
         billing = self._user_repository.find_billing_by_id(command.billing_id)
 
         if not billing:
-            self.add_notification(Notification('billing', 'billing not exists'))
+            self.add_notification(Notification(
+                'billing', 'billing not exists'))
 
         if not self.is_valid:
             return
@@ -75,7 +73,8 @@ class CancelReceiveBilling(UseCase):
         billing = self._user_repository.find_billing_by_id(command.billing_id)
 
         if not billing:
-            self.add_notification(Notification('billing', 'billing not exists'))
+            self.add_notification(Notification(
+                'billing', 'billing not exists'))
 
         if not self.is_valid:
             return
@@ -99,7 +98,8 @@ class UpdateBilling(UseCase):
         billing = self._user_repository.find_billing_by_id(command.billing_id)
 
         if not billing:
-            self.add_notification(Notification('billing', 'billing not exists'))
+            self.add_notification(Notification(
+                'billing', 'billing not exists'))
 
         billing_summary = BillingSummary(title=command.title,
                                          description=command.description,
