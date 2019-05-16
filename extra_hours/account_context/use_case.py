@@ -30,3 +30,13 @@ class CreateUser(UseCase):
             return
 
         self._user_repository.save(user)
+
+
+class AuthenticateUser:
+    def __init__(self, user_repository):
+        self._user_repository = user_repository
+
+    def execute(self, command):
+        self._user_repository.find_by_credentials()
+
+        # TODO: steps to authenticate user

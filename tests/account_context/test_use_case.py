@@ -1,8 +1,9 @@
 import unittest
 from unittest.mock import Mock
 
-from extra_hours.account_context.commands import CreateUserCommand
-from extra_hours.account_context.use_case import CreateUser
+from extra_hours.account_context.commands import (AuthenticateUserCommand,
+                                                  CreateUserCommand)
+from extra_hours.account_context.use_case import AuthenticateUser, CreateUser
 
 
 class CreateUserTests(unittest.TestCase):
@@ -43,3 +44,17 @@ class CreateUserTests(unittest.TestCase):
         self._create_user.execute(self._command)
 
         self.assertTrue(self._create_user.is_valid)
+
+
+class AuthenticateUserTests(unittest.TestCase):
+    def test_should_ensure_find_by_credentials(self):
+        command = AuthenticateUserCommand(email='captain@marvel.com.br',
+                                          password='test123')
+
+        user_repository = Mock()
+
+        authenticate_user = AuthenticateUser(user_repository)
+
+        authenticate_user.execute(command)
+
+        user_repository.find_by_credentials.assert_called_once()
