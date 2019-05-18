@@ -1,6 +1,6 @@
 from pyflunt.validations import Contract
 
-from extra_hours.shared_context.value_objects import ValueObject
+from extra_hours.shared.value_objects import ValueObject
 
 
 class Password(ValueObject):
@@ -23,6 +23,9 @@ class Password(ValueObject):
                                       field='password',
                                       message='password should be numeric character'))
 
+    def __str__(self):
+        return self._password
+
 
 class Email(ValueObject):
     def __init__(self, email):
@@ -34,3 +37,6 @@ class Email(ValueObject):
                                .is_email(value=email,
                                          field='email',
                                          message='invalid email'))
+
+    def __str__(self):
+        return self._email

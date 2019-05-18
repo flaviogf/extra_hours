@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pyflunt.validations import Contract
 
-from extra_hours.shared_context.value_objects import ValueObject
+from extra_hours.shared.value_objects import ValueObject
 
 
 class BillingSummary(ValueObject):
