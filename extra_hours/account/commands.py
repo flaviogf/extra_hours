@@ -11,3 +11,8 @@ class CreateUserCommand:
 class AuthenticateUserCommand:
     email: str
     password: str
+
+
+@dataclass
+class ResetsPasswordCommand:
+    email: str

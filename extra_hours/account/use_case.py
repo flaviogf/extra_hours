@@ -52,3 +52,19 @@ class AuthenticateUser(UseCase):
             self.add_notification(Notification('user', 'email or password invalid'))
 
         return user
+
+
+class ResetsPassword(UseCase):
+    def __init__(self, user_service):
+        super().__init__()
+        self._user_service = user_service
+
+    def execute(self, command):
+        email = Email(command.email)
+
+        self.add_notifications(email)
+
+        if not self.is_valid:
+            return
+
+        self._user_service.send_password_reset_email(str(email))

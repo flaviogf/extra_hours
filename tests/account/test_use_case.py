@@ -2,9 +2,9 @@ import unittest
 from unittest.mock import Mock
 
 from extra_hours.account.commands import (AuthenticateUserCommand,
-                                          CreateUserCommand)
+                                          CreateUserCommand, ResetsPasswordCommand)
 from extra_hours.account.entities import User
-from extra_hours.account.use_case import AuthenticateUser, CreateUser
+from extra_hours.account.use_case import AuthenticateUser, CreateUser, ResetsPassword
 
 
 class CreateUserTests(unittest.TestCase):
@@ -92,3 +92,24 @@ class AuthenticateUserTests(unittest.TestCase):
         user = self._authenticate_user.execute(self._command)
 
         self.assertIsInstance(user, User)
+
+
+class ResetsPasswordTests(unittest.TestCase):
+    def setUp(self):
+        self._command = ResetsPasswordCommand(email='captain@marvel.com')
+
+        self._user_service = Mock()
+
+        self._resets_password = ResetsPassword(self._user_service)
+
+    def test_should_ensure_send_password_reset_email(self):
+        self._resets_password.execute(self._command)
+
+        self._user_service.send_password_reset_email.assert_called_with(self._command.email)
+
+    def test_should_is_valid_false_when_email_not_is_valid(self):
+        command = ResetsPasswordCommand(email='captain')
+
+        self._resets_password.execute(command)
+
+        self.assertFalse(self._resets_password.is_valid)
