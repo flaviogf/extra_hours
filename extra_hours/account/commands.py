@@ -16,3 +16,10 @@ class AuthenticateUserCommand:
 @dataclass
 class ResetsPasswordCommand:
     email: str
+
+
+@dataclass
+class ChangeUserPasswordCommand:
+    email: str
+    old_password: str
+    new_password: str

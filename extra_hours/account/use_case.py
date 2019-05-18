@@ -55,9 +55,9 @@ class AuthenticateUser(UseCase):
 
 
 class ResetsPassword(UseCase):
-    def __init__(self, user_service):
+    def __init__(self, user_repository):
         super().__init__()
-        self._user_service = user_service
+        self._user_repository = user_repository
 
     def execute(self, command):
         email = Email(command.email)
@@ -67,4 +67,45 @@ class ResetsPassword(UseCase):
         if not self.is_valid:
             return
 
-        self._user_service.send_password_reset_email(str(email))
+        user = self._user_repository.find_by_email(str(email))
+
+        if not user:
+            self.add_notification(Notification('user', 'user not found'))
+            return
+
+        user.resets_password()
+
+        self._user_repository.save(user)
+
+
+class ChangeUserPassword(UseCase):
+    def __init__(self, user_repository, user_service):
+        super().__init__()
+        self._user_repository = user_repository
+        self._user_service = user_service
+
+    def execute(self, command):
+        email = Email(command.email)
+        old_password = Password(command.old_password)
+
+        self.add_notifications(email, old_password)
+
+        if not self.is_valid:
+            return
+
+        user = self._user_service.sign_with_email_and_password(str(email), str(old_password))
+
+        if not user:
+            self.add_notification(Notification('user', 'email or password invalid'))
+            return
+
+        new_password = Password(command.new_password)
+
+        user.change_password(new_password)
+
+        self.add_notifications(user)
+
+        if not self.is_valid:
+            return
+
+        self._user_repository.save(user)

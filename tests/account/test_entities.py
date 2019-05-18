@@ -31,3 +31,64 @@ class UserTests(unittest.TestCase):
                     password=password)
 
         self.assertFalse(user.is_valid)
+
+    def test_should_resets_password(self):
+        password = Password('test123567')
+        email = Email('captain@marvel.com.br')
+
+        user = User(email=email,
+                    password=password)
+
+        user.resets_password()
+
+        self.assertNotEqual(password, user._password)
+
+    def test_should_is_valid_true_when_resets_password(self):
+        password = Password('test123567')
+        email = Email('captain@marvel.com.br')
+
+        user = User(email=email,
+                    password=password)
+
+        user.resets_password()
+
+        self.assertTrue(user.is_valid)
+
+    def test_should_change_password(self):
+        password = Password('test123567')
+        email = Email('captain@marvel.com.br')
+
+        user = User(email=email,
+                    password=password)
+
+        new_password = Password('test45678')
+
+        user.change_password(new_password)
+
+        self.assertNotEqual(password, user._password)
+
+    def test_should_is_valid_true_when_change_password_valid(self):
+        password = Password('test123567')
+        email = Email('captain@marvel.com.br')
+
+        user = User(email=email,
+                    password=password)
+
+        new_password = Password('test45678')
+
+        user.change_password(new_password)
+
+        self.assertTrue(user.is_valid)
+
+    def test_should_is_valid_false_when_change_password_invalid(self):
+        password = Password('test123567')
+        email = Email('captain@marvel.com.br')
+
+        user = User(email=email,
+                    password=password)
+
+        new_password = Password('test')
+
+        user.change_password(new_password)
+
+        self.assertFalse(user.is_valid)
