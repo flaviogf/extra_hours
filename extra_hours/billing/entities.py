@@ -2,7 +2,7 @@ from datetime import datetime
 
 from functools import wraps
 
-from extra_hours.shared_context.entities import Entity
+from extra_hours.shared.entities import Entity
 
 
 def verify_billing_owner(func):

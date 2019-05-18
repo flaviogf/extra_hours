@@ -1,7 +1,7 @@
 import unittest
 import uuid
 
-from extra_hours.shared_context.entities import Entity
+from extra_hours.shared.entities import Entity
 
 
 class FakeEntity(Entity):

@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from extra_hours.billing_context.value_objects import BillingSummary
+from extra_hours.billing.value_objects import BillingSummary
 
 
 class BillingSummaryTests(unittest.TestCase):

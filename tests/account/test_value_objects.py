@@ -1,5 +1,5 @@
 import unittest
-from extra_hours.account_context.value_objects import Password, Email
+from extra_hours.account.value_objects import Password, Email
 
 
 class PasswordTests(unittest.TestCase):
@@ -23,6 +23,11 @@ class PasswordTests(unittest.TestCase):
 
         self.assertFalse(password.is_valid)
 
+    def test_should_str_return_raw_password(self):
+        password = Password(password='test123456')
+
+        self.assertEqual('test123456', str(password))
+
 
 class EmailTests(unittest.TestCase):
     def test_should_is_valid_true_when_email_is_valid(self):
@@ -34,3 +39,8 @@ class EmailTests(unittest.TestCase):
         email = Email(email='captain')
 
         self.assertFalse(email.is_valid)
+
+    def test_should_str_return_raw_email(self):
+        email = Email(email='captain@marvel.com')
+
+        self.assertEqual('captain@marvel.com', str(email))

@@ -1,7 +1,7 @@
 import unittest
 
-from extra_hours.account_context.entities import User
-from extra_hours.account_context.value_objects import Password, Email
+from extra_hours.account.entities import User
+from extra_hours.account.value_objects import Password, Email
 
 
 class UserTests(unittest.TestCase):

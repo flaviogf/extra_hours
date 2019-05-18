@@ -1,8 +1,8 @@
 from pyflunt.notifications import Notification
 
-from extra_hours.billing_context.entities import Billing
-from extra_hours.billing_context.value_objects import BillingSummary
-from extra_hours.shared_context.use_case import UseCase
+from extra_hours.billing.entities import Billing
+from extra_hours.billing.value_objects import BillingSummary
+from extra_hours.shared.use_case import UseCase
 
 
 class CreateBilling(UseCase):

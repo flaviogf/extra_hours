@@ -2,8 +2,8 @@ import unittest
 import uuid
 from datetime import datetime
 
-from extra_hours.billing_context.entities import Billing, User
-from extra_hours.billing_context.value_objects import BillingSummary
+from extra_hours.billing.entities import Billing, User
+from extra_hours.billing.value_objects import BillingSummary
 
 
 class BillingTests(unittest.TestCase):

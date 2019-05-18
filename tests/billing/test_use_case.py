@@ -3,16 +3,16 @@ import uuid
 from datetime import datetime
 from unittest.mock import Mock
 
-from extra_hours.billing_context.commands import (CreateBillingCommand,
-                                                  ConfirmReceiveBillingCommand,
-                                                  CancelReceiveBillingCommand,
-                                                  UpdateBillingCommand)
-from extra_hours.billing_context.entities import User, Billing
-from extra_hours.billing_context.use_case import (CreateBilling,
-                                                  ConfirmReceiveBilling,
-                                                  CancelReceiveBilling,
-                                                  UpdateBilling)
-from extra_hours.billing_context.value_objects import BillingSummary
+from extra_hours.billing.commands import (CreateBillingCommand,
+                                          ConfirmReceiveBillingCommand,
+                                          CancelReceiveBillingCommand,
+                                          UpdateBillingCommand)
+from extra_hours.billing.entities import User, Billing
+from extra_hours.billing.use_case import (CreateBilling,
+                                          ConfirmReceiveBilling,
+                                          CancelReceiveBilling,
+                                          UpdateBilling)
+from extra_hours.billing.value_objects import BillingSummary
 
 
 class CreateBillingTests(unittest.TestCase):
