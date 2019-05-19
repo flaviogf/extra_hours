@@ -22,3 +22,9 @@ class User(Entity):
         self._password = password
 
         self.add_notifications(password)
+
+    def to_dict(self):
+        return {
+            'email': str(self._email),
+            'password': str(self._password)
+        }
