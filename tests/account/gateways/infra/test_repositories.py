@@ -7,13 +7,17 @@ from extra_hours.account.gateways.infra.repositories import FirebaseUserReposito
 
 
 class FirebaseUserRepositoryTests(unittest.TestCase):
+    def setUp(self):
+        self._steve = User(email='captain@marvel.com',
+                           password='test123456')
+
+        self._user_repository = FirebaseUserRepository()
+
+    def test_should_check_email(self):
+        self._user_repository.check_email('captain@marvel.com')
+
     def test_should_save_user(self):
-        steve = User(email='captain@marvel.com',
-                     password='test123456')
-
-        user_repository = FirebaseUserRepository()
-
-        user_repository.save(steve)
+        self._user_repository.save(self._steve)
 
     def tearDown(self):
         self._delete_all_users()
