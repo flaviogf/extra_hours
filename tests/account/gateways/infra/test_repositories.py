@@ -14,10 +14,16 @@ class FirebaseUserRepositoryTests(unittest.TestCase):
         self._user_repository = FirebaseUserRepository()
 
     def test_should_check_email(self):
-        self._user_repository.check_email('captain@marvel.com')
+        email_available = self._user_repository.check_email('captain@marvel.com')
 
-    def test_should_save_user(self):
+        self.assertTrue(email_available)
+
+    def test_should_save_user_create_user_when_user_not_exists(self):
         self._user_repository.save(self._steve)
+
+        users = list(list_users().iterate_all())
+
+        self.assertEqual(1, len(users))
 
     def tearDown(self):
         self._delete_all_users()
