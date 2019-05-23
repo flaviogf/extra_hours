@@ -101,6 +101,7 @@ class UserTests(unittest.TestCase):
                     password=password)
 
         expected = {
+            'uid': str(user.uid),
             'email': 'captain@marvel.com.br',
             'password': 'test123567'
         }

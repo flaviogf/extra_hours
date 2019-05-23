@@ -90,13 +90,12 @@ class AuthenticateUserTests(unittest.TestCase):
 
         self.assertFalse(self._authenticate_user.is_valid)
 
-    def test_should_return_user_when_authenticate(self):
-        self._user_service.sign_with_email_and_password.return_value = User(email=self._command.email,
-                                                                            password=self._command.password)
+    def test_should_return_id_token_when_authenticate(self):
+        self._user_service.sign_with_email_and_password.return_value = 'xpto-xpto'
 
-        user = self._authenticate_user.execute(self._command)
+        token = self._authenticate_user.execute(self._command)
 
-        self.assertIsInstance(user, User)
+        self.assertIsInstance(token, str)
 
 
 class ResetsPasswordTests(unittest.TestCase):

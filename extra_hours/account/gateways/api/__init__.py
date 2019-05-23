@@ -1,19 +1,38 @@
+from os.path import dirname, join
+
+import firebase_admin
+from firebase_admin import credentials
 from flask import Flask
 
-from extra_hours.account.gateways.api.views import create_account
+from extra_hours.account.gateways.api.views import create_bp_account
 from extra_hours.account.gateways.infra.repositories import FirebaseUserRepository
-from extra_hours.account.use_case import CreateUser
+from extra_hours.account.gateways.infra.services import FirebaseUserService
+from extra_hours.account.use_case import CreateUser, AuthenticateUser
+
+
+def get_create_user():
+    user_repository = FirebaseUserRepository()
+    return CreateUser(user_repository)
+
+
+def get_authenticate_user():
+    user_service = FirebaseUserService()
+    return AuthenticateUser(user_service)
 
 
 def create_app():
     app = Flask(__name__)
 
-    def get_create_user():
-        user_repository = FirebaseUserRepository()
-        return CreateUser(user_repository)
+    root_path = dirname(dirname(dirname(dirname(dirname(__file__)))))
 
-    account = create_account(get_create_user)
+    certificate_path = join(root_path, '.firebase.json')
 
-    app.register_blueprint(account)
+    cred = credentials.Certificate(certificate_path)
+
+    firebase_admin.initialize_app(cred)
+
+    bp_account = create_bp_account(get_create_user, get_authenticate_user)
+
+    app.register_blueprint(bp_account)
 
     return app

@@ -1,25 +1,28 @@
 import unittest
-from unittest.mock import PropertyMock, MagicMock
+from unittest.mock import PropertyMock, Mock
 
 from flask import Flask
 from pyflunt.notifications import Notification
 
-from extra_hours.account.gateways.api.views import create_account
+from extra_hours.account.gateways.api.views import create_bp_account
 
 
-class AccountTests(unittest.TestCase):
+class CreateUserViewTests(unittest.TestCase):
     def setUp(self):
         self._app = Flask(__name__)
 
-        self._create_user = MagicMock()
+        self._create_user = Mock()
 
-        account = create_account(MagicMock(return_value=self._create_user))
+        authenticated_user = Mock()
 
-        self._app.register_blueprint(account)
+        bp_account = create_bp_account(Mock(return_value=self._create_user),
+                                       Mock(return_value=authenticated_user))
+
+        self._app.register_blueprint(bp_account)
 
         self._client = self._app.test_client()
 
-    def test_should_create_billing_return_status_code_ok_when_use_case_is_valid(self):
+    def test_should_return_status_code_created_when_use_case_is_valid(self):
         is_valid = PropertyMock(return_value=True)
 
         type(self._create_user).is_valid = is_valid
@@ -33,7 +36,7 @@ class AccountTests(unittest.TestCase):
 
         self.assertEqual(201, response.status_code)
 
-    def test_should_create_billing_return_status_code_bad_request_when_use_case_not_is_valid(self):
+    def test_should_return_status_code_bad_request_when_use_case_not_is_valid(self):
         invalid_name = Notification('name', 'invalid name')
 
         is_valid = PropertyMock(return_value=False)
@@ -51,7 +54,7 @@ class AccountTests(unittest.TestCase):
 
         self.assertEqual(400, response.status_code)
 
-    def test_should_create_billing_return_list_of_notifications_when_use_case_not_is_valid(self):
+    def test_should_return_list_of_notifications_when_use_case_not_is_valid(self):
         invalid_name = Notification('name', 'invalid name')
 
         is_valid = PropertyMock(return_value=False)
@@ -68,3 +71,101 @@ class AccountTests(unittest.TestCase):
         response = self._client.post('/api/v1/account', json=json)
 
         self.assertListEqual(['invalid name'], response.json)
+
+
+class AuthenticateUserViewTests(unittest.TestCase):
+    def test_should_return_status_code_ok_when_use_case_is_valid(self):
+        user_not_authenticate = Notification('user', 'user not authenticate')
+
+        is_valid = PropertyMock(return_value=True)
+        notifications = PropertyMock(return_value=[user_not_authenticate])
+        execute = Mock(return_value='token')
+
+        create_user = Mock()
+        authenticate_user = Mock()
+
+        type(authenticate_user).is_valid = is_valid
+        type(authenticate_user).notifications = notifications
+        type(authenticate_user).execute = execute
+
+        app = Flask(__name__)
+
+        bp_account = create_bp_account(Mock(return_value=create_user),
+                                       Mock(return_value=authenticate_user))
+
+        app.register_blueprint(bp_account)
+
+        client = app.test_client()
+
+        json = {
+            'email': 'captain@marvel.com.br',
+            'password': 'test123567'
+        }
+
+        response = client.post('/api/v1/account/authenticate', json=json)
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_return_status_code_no_authorized_when_use_case_not_is_valid(self):
+        user_not_authenticate = Notification('user', 'user not authenticate')
+
+        is_valid = PropertyMock(return_value=False)
+        notifications = PropertyMock(return_value=[user_not_authenticate])
+        execute = Mock(return_value='token')
+
+        create_user = Mock()
+        authenticate_user = Mock()
+
+        type(authenticate_user).is_valid = is_valid
+        type(authenticate_user).notifications = notifications
+        type(authenticate_user).execute = execute
+
+        app = Flask(__name__)
+
+        bp_account = create_bp_account(Mock(return_value=create_user),
+                                       Mock(return_value=authenticate_user))
+
+        app.register_blueprint(bp_account)
+
+        client = app.test_client()
+
+        json = {
+            'email': 'captain@marvel.com.br',
+            'password': 'test123567'
+        }
+
+        response = client.post('/api/v1/account/authenticate', json=json)
+
+        self.assertEqual(401, response.status_code)
+
+    def test_should_return_list_of_notifications_when_use_case_not_is_valid(self):
+        user_not_authenticate = Notification('user', 'user not authenticate')
+
+        is_valid = PropertyMock(return_value=False)
+        notifications = PropertyMock(return_value=[user_not_authenticate])
+        execute = Mock(return_value='token')
+
+        create_user = Mock()
+        authenticate_user = Mock()
+
+        type(authenticate_user).is_valid = is_valid
+        type(authenticate_user).notifications = notifications
+        type(authenticate_user).execute = execute
+
+        app = Flask(__name__)
+
+        bp_account = create_bp_account(Mock(return_value=create_user),
+                                       Mock(return_value=authenticate_user))
+
+        app.register_blueprint(bp_account)
+
+        client = app.test_client()
+
+        json = {
+            'email': 'captain@marvel.com.br',
+            'password': 'test123567'
+        }
+
+        response = client.post('/api/v1/account/authenticate', json=json)
+
+        self.assertListEqual(['user not authenticate'], response.json)

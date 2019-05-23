@@ -1,12 +1,11 @@
-import unittest
-
 from firebase_admin.auth import list_users, delete_user
 
 from extra_hours.account.entities import User
 from extra_hours.account.gateways.infra.repositories import FirebaseUserRepository
+from tests.account.gateways.infra.base import InfraTestCase
 
 
-class FirebaseUserRepositoryTests(unittest.TestCase):
+class FirebaseUserRepositoryTests(InfraTestCase):
     def setUp(self):
         self._steve = User(email='captain@marvel.com',
                            password='test123456')

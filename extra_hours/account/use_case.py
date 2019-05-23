@@ -46,12 +46,12 @@ class AuthenticateUser(UseCase):
         if not self.is_valid:
             return
 
-        user = self._user_service.sign_with_email_and_password(str(email), str(password))
+        token = self._user_service.sign_with_email_and_password(str(email), str(password))
 
-        if not user:
+        if not token:
             self.add_notification(Notification('user', 'email or password invalid'))
 
-        return user
+        return token
 
 
 class ResetsPassword(UseCase):

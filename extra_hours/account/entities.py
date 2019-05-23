@@ -5,8 +5,8 @@ from extra_hours.shared.entities import Entity
 
 
 class User(Entity):
-    def __init__(self, email, password):
-        super().__init__()
+    def __init__(self, email, password, uid=None):
+        super().__init__(uid=uid)
         self._email = email
         self._password = password
 
@@ -25,6 +25,7 @@ class User(Entity):
 
     def to_dict(self):
         return {
+            'uid': str(self.uid),
             'email': str(self._email),
             'password': str(self._password)
         }
