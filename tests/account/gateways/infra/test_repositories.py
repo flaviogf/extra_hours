@@ -35,6 +35,18 @@ class FirebaseUserRepositoryTests(InfraTestCase):
 
         self.assertEqual(1, len(users))
 
+    def test_should_find_by_email_return_use_when_user_exists(self):
+        create_user(**self._steve.to_dict())
+
+        user = self._user_repository.find_by_email('captain@marvel.com')
+
+        self.assertIsInstance(user, User)
+
+    def test_should_find_by_email_return_none_when_user_not_exists(self):
+        user = self._user_repository.find_by_email('captain@marvel.com')
+
+        self.assertIsNone(user)
+
     def tearDown(self):
         self._delete_all_users()
 

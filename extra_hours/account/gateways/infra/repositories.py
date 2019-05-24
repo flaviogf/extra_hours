@@ -1,6 +1,8 @@
 from firebase_admin.auth import (AuthError, create_user, get_user_by_email,
                                  update_user)
 
+from extra_hours.account.entities import User
+
 
 class FirebaseUserRepository:
     def check_email(self, email):
@@ -21,5 +23,11 @@ class FirebaseUserRepository:
             update_user(**user_dict)
 
     def find_by_email(self, email):
-        # TODO: implements
-        pass
+        try:
+            user = get_user_by_email(email)
+        except (AuthError, ValueError):
+            return None
+        else:
+            user = User(email=user.email, password='', uid=user.uid)
+
+            return user
