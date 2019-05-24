@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import PropertyMock, Mock
+import uuid
+from unittest.mock import Mock, PropertyMock
 
 from flask import Flask
 from pyflunt.notifications import Notification
@@ -14,9 +15,11 @@ class CreateUserViewTests(unittest.TestCase):
         self._create_user = Mock()
 
         authenticated_user = Mock()
+        resets_password = Mock()
 
         bp_account = create_bp_account(Mock(return_value=self._create_user),
-                                       Mock(return_value=authenticated_user))
+                                       Mock(return_value=authenticated_user),
+                                       Mock(return_value=resets_password))
 
         self._app.register_blueprint(bp_account)
 
@@ -83,6 +86,7 @@ class AuthenticateUserViewTests(unittest.TestCase):
 
         create_user = Mock()
         authenticate_user = Mock()
+        resets_password = Mock()
 
         type(authenticate_user).is_valid = is_valid
         type(authenticate_user).notifications = notifications
@@ -91,7 +95,8 @@ class AuthenticateUserViewTests(unittest.TestCase):
         app = Flask(__name__)
 
         bp_account = create_bp_account(Mock(return_value=create_user),
-                                       Mock(return_value=authenticate_user))
+                                       Mock(return_value=authenticate_user),
+                                       Mock(return_value=resets_password))
 
         app.register_blueprint(bp_account)
 
@@ -115,6 +120,7 @@ class AuthenticateUserViewTests(unittest.TestCase):
 
         create_user = Mock()
         authenticate_user = Mock()
+        resets_password = Mock()
 
         type(authenticate_user).is_valid = is_valid
         type(authenticate_user).notifications = notifications
@@ -123,7 +129,8 @@ class AuthenticateUserViewTests(unittest.TestCase):
         app = Flask(__name__)
 
         bp_account = create_bp_account(Mock(return_value=create_user),
-                                       Mock(return_value=authenticate_user))
+                                       Mock(return_value=authenticate_user),
+                                       Mock(return_value=resets_password))
 
         app.register_blueprint(bp_account)
 
@@ -147,6 +154,7 @@ class AuthenticateUserViewTests(unittest.TestCase):
 
         create_user = Mock()
         authenticate_user = Mock()
+        resets_password = Mock()
 
         type(authenticate_user).is_valid = is_valid
         type(authenticate_user).notifications = notifications
@@ -155,7 +163,8 @@ class AuthenticateUserViewTests(unittest.TestCase):
         app = Flask(__name__)
 
         bp_account = create_bp_account(Mock(return_value=create_user),
-                                       Mock(return_value=authenticate_user))
+                                       Mock(return_value=authenticate_user),
+                                       Mock(return_value=resets_password))
 
         app.register_blueprint(bp_account)
 
@@ -169,3 +178,85 @@ class AuthenticateUserViewTests(unittest.TestCase):
         response = client.post('/api/v1/account/authenticate', json=json)
 
         self.assertListEqual(['user not authenticate'], response.json)
+
+
+class ResetsPasswordViewTests(unittest.TestCase):
+    def test_should_return_status_code_ok_when_use_case_is_valid(self):
+        app = Flask(__name__)
+
+        create_user = Mock()
+        authenticate_user = Mock()
+        resets_password = Mock()
+
+        is_valid = PropertyMock(return_value=True)
+
+        type(resets_password).is_valid = is_valid
+        type(resets_password).notifications = []
+
+        bp_account = create_bp_account(Mock(return_value=create_user),
+                                       Mock(return_value=authenticate_user),
+                                       Mock(return_value=resets_password))
+
+        app.register_blueprint(bp_account)
+
+        client = app.test_client()
+
+        email = 'captain@marvel.com'
+
+        response = client.get(f'/api/v1/account/{email}/resets-password')
+
+        self.assertEqual(204, response.status_code)
+
+    def test_should_return_status_code_bad_request_when_use_case_not_is_valid(self):
+        app = Flask(__name__)
+
+        create_user = Mock()
+        authenticate_user = Mock()
+        resets_password = Mock()
+
+        is_valid = PropertyMock(return_value=False)
+        email_invalid = Notification('email', 'email invalid')
+
+        type(resets_password).is_valid = is_valid
+        type(resets_password).notifications = [email_invalid]
+
+        bp_account = create_bp_account(Mock(return_value=create_user),
+                                       Mock(return_value=authenticate_user),
+                                       Mock(return_value=resets_password))
+
+        app.register_blueprint(bp_account)
+
+        client = app.test_client()
+
+        email = 'captain@marvel.com'
+
+        response = client.get(f'/api/v1/account/{email}/resets-password')
+
+        self.assertEqual(400, response.status_code)
+
+    def test_should_return_list_of_notifications_when_use_case_not_is_valid(self):
+        app = Flask(__name__)
+
+        create_user = Mock()
+        authenticate_user = Mock()
+        resets_password = Mock()
+
+        is_valid = PropertyMock(return_value=False)
+        email_invalid = Notification('email', 'email invalid')
+
+        type(resets_password).is_valid = is_valid
+        type(resets_password).notifications = [email_invalid]
+
+        bp_account = create_bp_account(Mock(return_value=create_user),
+                                       Mock(return_value=authenticate_user),
+                                       Mock(return_value=resets_password))
+
+        app.register_blueprint(bp_account)
+
+        client = app.test_client()
+
+        email = 'captain@marvel.com'
+
+        response = client.get(f'/api/v1/account/{email}/resets-password')
+
+        self.assertListEqual(['email invalid'], response.json)
