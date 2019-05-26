@@ -1,8 +1,7 @@
 from firebase_admin.auth import create_user, delete_user, list_users
 
 from extra_hours.account.entities import User
-from extra_hours.account.gateways.infra.repositories import \
-    FirebaseUserRepository
+from extra_hours.account.gateways.infra.repositories import FirebaseUserRepository
 from tests.account.gateways.infra.base import InfraTestCase
 
 

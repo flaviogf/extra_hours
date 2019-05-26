@@ -1,4 +1,6 @@
-from firebase_admin.auth import (AuthError, create_user, get_user_by_email,
+from firebase_admin.auth import (AuthError,
+                                 create_user,
+                                 get_user_by_email,
                                  update_user)
 
 from extra_hours.account.entities import User

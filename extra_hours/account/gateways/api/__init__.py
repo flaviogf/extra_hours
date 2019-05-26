@@ -5,10 +5,10 @@ from firebase_admin import credentials
 from flask import Flask
 
 from extra_hours.account.gateways.api.views import create_bp_account
-from extra_hours.account.gateways.infra.repositories import \
-    FirebaseUserRepository
+from extra_hours.account.gateways.infra.repositories import FirebaseUserRepository
 from extra_hours.account.gateways.infra.services import FirebaseUserService
-from extra_hours.account.use_case import (AuthenticateUser, CreateUser,
+from extra_hours.account.use_case import (AuthenticateUser,
+                                          CreateUser,
                                           ResetsPassword)
 
 
