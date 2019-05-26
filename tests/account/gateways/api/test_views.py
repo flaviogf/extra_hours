@@ -14,10 +14,12 @@ class AccountViewTests(unittest.TestCase):
         self._create_user = Mock()
         self._authenticate_user = Mock()
         self._resets_password = Mock()
+        self._change_user_password = Mock()
 
         self._bp_account = create_bp_account(Mock(return_value=self._create_user),
                                              Mock(return_value=self._authenticate_user),
-                                             Mock(return_value=self._resets_password))
+                                             Mock(return_value=self._resets_password),
+                                             Mock(return_value=self._change_user_password))
 
         self._app.register_blueprint(self._bp_account)
 
@@ -179,3 +181,57 @@ class ResetsPasswordViewTests(AccountViewTests):
         response = self._client.get(f'/api/v1/account/{email}/resets-password')
 
         self.assertListEqual(['email invalid'], response.json)
+
+
+class ChangeUserPasswordViewTests(AccountViewTests):
+    def test_should_return_status_no_content_when_use_case_is_valid(self):
+        email = 'captain@marvel.com'
+
+        json = {
+            'old_password': 'test123456',
+            'new_password': 'test654321',
+        }
+
+        response = self._client.post(f'/api/v1/account/{email}/change-password', json=json)
+
+        self.assertEqual(204, response.status_code)
+
+    def test_should_return_status_bad_request_when_use_case_not_is_valid(self):
+        user_not_authenticate = Notification('user', 'user not authenticate')
+
+        is_valid = PropertyMock(return_value=False)
+        notifications = PropertyMock(return_value=[user_not_authenticate])
+
+        type(self._change_user_password).is_valid = is_valid
+        type(self._change_user_password).notifications = notifications
+
+        email = 'captain@marvel.com'
+
+        json = {
+            'old_password': '',
+            'new_password': '',
+        }
+
+        response = self._client.post(f'/api/v1/account/{email}/change-password', json=json)
+
+        self.assertEqual(400, response.status_code)
+
+    def test_should_return_status_list_of_notification_when_use_case_not_is_valid(self):
+        user_not_authenticate = Notification('user', 'user not authenticate')
+
+        is_valid = PropertyMock(return_value=False)
+        notifications = PropertyMock(return_value=[user_not_authenticate])
+
+        type(self._change_user_password).is_valid = is_valid
+        type(self._change_user_password).notifications = notifications
+
+        email = 'captain@marvel.com'
+
+        json = {
+            'old_password': '',
+            'new_password': '',
+        }
+
+        response = self._client.post(f'/api/v1/account/{email}/change-password', json=json)
+
+        self.assertListEqual(['user not authenticate'], response.json)

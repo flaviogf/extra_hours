@@ -19,7 +19,7 @@ class FirebaseUserRepository:
 
         try:
             get_user_by_email(user_dict['email'])
-        except (AuthError):
+        except (AuthError, ValueError):
             create_user(**user_dict)
         else:
             update_user(**user_dict)

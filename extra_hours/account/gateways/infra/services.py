@@ -1,4 +1,8 @@
+import uuid
+
 import requests
+
+from extra_hours.account.entities import User
 
 
 class FirebaseUserService:
@@ -13,6 +17,14 @@ class FirebaseUserService:
         response = requests.post(url_api.format('AIzaSyBSutdXuiHNq9JqSkN8Zqx9EpAhcQY7g9M'), data=data)
 
         if response.status_code != 200:
-            return
+            return None, None
 
-        return response.json()['idToken']
+        json = response.json()
+
+        token = json['idToken']
+
+        user = User(email=email,
+                    password=password,
+                    uid=uuid.UUID(json['localId']))
+
+        return user, token

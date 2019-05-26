@@ -9,7 +9,8 @@ from extra_hours.account.gateways.infra.repositories import FirebaseUserReposito
 from extra_hours.account.gateways.infra.services import FirebaseUserService
 from extra_hours.account.use_case import (AuthenticateUser,
                                           CreateUser,
-                                          ResetsPassword)
+                                          ResetsPassword,
+                                          ChangeUserPassword)
 
 
 def get_create_user():
@@ -27,6 +28,12 @@ def get_resets_password():
     return ResetsPassword(user_repository)
 
 
+def get_change_user_password():
+    user_repository = FirebaseUserRepository()
+    user_service = FirebaseUserService()
+    return ChangeUserPassword(user_repository, user_service)
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -40,7 +47,8 @@ def create_app():
 
     bp_account = create_bp_account(get_create_user,
                                    get_authenticate_user,
-                                   get_resets_password)
+                                   get_resets_password,
+                                   get_change_user_password)
 
     app.register_blueprint(bp_account)
 
