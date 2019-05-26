@@ -1,4 +1,5 @@
 import unittest
+
 from extra_hours.account.value_objects import Password, Email
 
 

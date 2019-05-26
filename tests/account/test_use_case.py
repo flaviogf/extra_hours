@@ -62,13 +62,18 @@ class AuthenticateUserTests(unittest.TestCase):
         self._authenticate_user = AuthenticateUser(self._user_service)
 
     def test_should_ensure_sign_user_with_email_and_password(self):
+        steve = User(email='steve@gmail.com', password='')
+        token = 'xpto'
+
+        self._user_service.sign_with_email_and_password.return_value = steve, token
+
         self._authenticate_user.execute(self._command)
 
         self._user_service.sign_with_email_and_password.assert_called_with(self._command.email,
                                                                            self._command.password)
 
     def test_should_is_valid_false_when_user_not_is_authenticated(self):
-        self._user_service.sign_with_email_and_password.return_value = None
+        self._user_service.sign_with_email_and_password.return_value = None, None
 
         self._authenticate_user.execute(self._command)
 
@@ -90,13 +95,12 @@ class AuthenticateUserTests(unittest.TestCase):
 
         self.assertFalse(self._authenticate_user.is_valid)
 
-    def test_should_return_user_when_authenticate(self):
-        self._user_service.sign_with_email_and_password.return_value = User(email=self._command.email,
-                                                                            password=self._command.password)
+    def test_should_return_id_token_when_authenticate(self):
+        self._user_service.sign_with_email_and_password.return_value = None, 'xpto-xpto'
 
-        user = self._authenticate_user.execute(self._command)
+        token = self._authenticate_user.execute(self._command)
 
-        self.assertIsInstance(user, User)
+        self.assertIsInstance(token, str)
 
 
 class ResetsPasswordTests(unittest.TestCase):
@@ -141,13 +145,15 @@ class ChangeUserPasswordTests(unittest.TestCase):
         self._user = User(email='captain@marvel.com',
                           password='test12356')
 
+        token = 'xpto'
+
         self._command = ChangeUserPasswordCommand(email='captain@marvel.com',
                                                   old_password='test12356',
                                                   new_password='test654321')
 
         self._user_repository = Mock()
         self._user_service = Mock()
-        self._user_service.sign_with_email_and_password.return_value = self._user
+        self._user_service.sign_with_email_and_password.return_value = self._user, token
 
         self._change_password = ChangeUserPassword(self._user_repository,
                                                    self._user_service)
@@ -159,7 +165,7 @@ class ChangeUserPasswordTests(unittest.TestCase):
                                                                            self._command.old_password)
 
     def test_should_is_valid_false_when_user_not_is_authenticated(self):
-        self._user_service.sign_with_email_and_password.return_value = None
+        self._user_service.sign_with_email_and_password.return_value = None, None
 
         self._change_password.execute(self._command)
 

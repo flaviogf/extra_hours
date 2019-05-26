@@ -92,3 +92,18 @@ class UserTests(unittest.TestCase):
         user.change_password(new_password)
 
         self.assertFalse(user.is_valid)
+
+    def test_should_to_dict_return_user_dict_representation(self):
+        password = Password('test123567')
+        email = Email('captain@marvel.com.br')
+
+        user = User(email=email,
+                    password=password)
+
+        expected = {
+            'uid': str(user.uid),
+            'email': 'captain@marvel.com.br',
+            'password': 'test123567'
+        }
+
+        self.assertDictEqual(expected, user.to_dict())

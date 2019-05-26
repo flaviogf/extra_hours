@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from functools import wraps
 
 from extra_hours.shared.entities import Entity
