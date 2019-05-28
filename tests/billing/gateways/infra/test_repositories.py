@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
 
-from firebase_admin.auth import create_user, list_users, delete_user
+from firebase_admin import firestore
+from firebase_admin.auth import create_user, delete_user, list_users
 
-from extra_hours.billing.entities import User, Billing
+from extra_hours.billing.entities import Billing, User
 from extra_hours.billing.gateways.infra.repositories import FirebaseUserRepository
 from extra_hours.billing.value_objects import BillingSummary
 from tests.billing.gateways.infra.base import InfraTestCase
@@ -44,5 +45,21 @@ class FirebaseUserRepositoryTests(InfraTestCase):
         self._user_repository.save(self._steve)
 
     def tearDown(self):
+        self._delete_user()
+        self._delete_user_document()
+
+    def _delete_user(self):
         for user in list_users().iterate_all():
             delete_user(user.uid)
+
+    def _delete_user_document(self):
+        db = firestore.client()
+
+        user_collection = db.collection('user')
+
+        for user in user_collection.list_documents():
+
+            for billing in user.collection('billing').list_documents():
+                billing.delete()
+
+            user.delete()

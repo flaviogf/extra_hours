@@ -58,6 +58,22 @@ class Billing(Entity):
 
         self.add_notifications(summary)
 
+    def to_dict(self):
+        return {
+            'title': self.title,
+            'description': self.description,
+            'value': self.value,
+            'work_date': self._format_work_date(),
+            'received_date': self._format_received_date(),
+            'received': self.received,
+        }
+
+    def _format_work_date(self):
+        return self.work_date.strftime('%Y-%m-%d')
+
+    def _format_received_date(self):
+        return self.received_date.strftime('%Y-%m-%d') if self._received_date else None
+
 
 class User(Entity):
     def __init__(self, billing=(), uid=None):

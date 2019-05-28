@@ -93,6 +93,21 @@ class BillingTests(unittest.TestCase):
 
         self.assertFalse(self._billing.is_valid)
 
+    def test_should_to_dict_return_all_billing_properties(self):
+        self._billing.confirm_receive()
+
+        expected = {
+            'title': self._billing.title,
+            'description': self._billing.description,
+            'value': self._billing.value,
+            'work_date': self._billing.work_date.strftime('%Y-%m-%d'),
+            'received_date': self._billing.received_date.strftime('%Y-%m-%d'),
+            'received': self._billing.received,
+
+        }
+
+        self.assertDictEqual(expected, self._billing.to_dict())
+
 
 class UserTests(unittest.TestCase):
     def setUp(self):

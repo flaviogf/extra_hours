@@ -1,7 +1,7 @@
 import uuid
 
 from firebase_admin import firestore
-from firebase_admin.auth import get_user, AuthError
+from firebase_admin.auth import AuthError, get_user
 
 from extra_hours.billing.entities import User
 
@@ -28,8 +28,4 @@ class FirebaseUserRepository:
 
         for billing in user.billing:
             billing_document = billing_collection.document(str(billing.uid))
-
-            billing_document.set({
-                'title': billing.title,
-                'value': billing.value
-            })
+            billing_document.set(billing.to_dict())

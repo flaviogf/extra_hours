@@ -1,7 +1,6 @@
 from os.path import dirname, join
 
-import firebase_admin
-from firebase_admin import credentials
+from firebase_admin import credentials, initialize_app
 from flask import Flask
 
 from extra_hours.account.gateways.api.views import create_bp_account
@@ -11,6 +10,21 @@ from extra_hours.account.use_case import (AuthenticateUser,
                                           CreateUser,
                                           ResetsPassword,
                                           ChangeUserPassword)
+
+
+def create_app():
+    app = Flask(__name__)
+
+    initialize_firebase()
+
+    bp_account = create_bp_account(get_create_user,
+                                   get_authenticate_user,
+                                   get_resets_password,
+                                   get_change_user_password)
+
+    app.register_blueprint(bp_account)
+
+    return app
 
 
 def get_create_user():
@@ -34,22 +48,8 @@ def get_change_user_password():
     return ChangeUserPassword(user_repository, user_service)
 
 
-def create_app():
-    app = Flask(__name__)
-
+def initialize_firebase():
     root_path = dirname(dirname(dirname(dirname(dirname(__file__)))))
-
     certificate_path = join(root_path, '.firebase.json')
-
     cred = credentials.Certificate(certificate_path)
-
-    firebase_admin.initialize_app(cred)
-
-    bp_account = create_bp_account(get_create_user,
-                                   get_authenticate_user,
-                                   get_resets_password,
-                                   get_change_user_password)
-
-    app.register_blueprint(bp_account)
-
-    return app
+    initialize_app(cred)
