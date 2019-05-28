@@ -14,8 +14,7 @@ class CreateUser(UseCase):
         email_available = self._user_repository.check_email(command.email)
 
         if not email_available:
-            self.add_notifications(Notification('email',
-                                                'email not is available'))
+            self.add_notifications(Notification('email', 'email not is available'))
             return
 
         email = Email(command.email)

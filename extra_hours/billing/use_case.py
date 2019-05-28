@@ -23,8 +23,7 @@ class CreateBilling(UseCase):
 
         billing = Billing(summary=summary)
 
-        if not billing.is_valid:
-            self.add_notifications(billing)
+        self.add_notifications(billing)
 
         if not self.is_valid:
             return
@@ -48,11 +47,12 @@ class ConfirmReceiveBilling(UseCase):
         billing = self._user_repository.find_billing_by_id(command.billing_id)
 
         if not billing:
-            self.add_notification(Notification(
-                'billing', 'billing not exists'))
+            self.add_notification(Notification('billing', 'billing not exists'))
 
         if not self.is_valid:
             return
+
+        user.add_billing(billing)
 
         user.confirm_receive(billing)
 
@@ -73,8 +73,7 @@ class CancelReceiveBilling(UseCase):
         billing = self._user_repository.find_billing_by_id(command.billing_id)
 
         if not billing:
-            self.add_notification(Notification(
-                'billing', 'billing not exists'))
+            self.add_notification(Notification('billing', 'billing not exists'))
 
         if not self.is_valid:
             return
@@ -98,16 +97,14 @@ class UpdateBilling(UseCase):
         billing = self._user_repository.find_billing_by_id(command.billing_id)
 
         if not billing:
-            self.add_notification(Notification(
-                'billing', 'billing not exists'))
+            self.add_notification(Notification('billing', 'billing not exists'))
 
         billing_summary = BillingSummary(title=command.title,
                                          description=command.description,
                                          value=command.value,
                                          work_date=command.work_date)
 
-        if not billing_summary.is_valid:
-            self.add_notifications(billing_summary)
+        self.add_notifications(billing_summary)
 
         if not self.is_valid:
             return

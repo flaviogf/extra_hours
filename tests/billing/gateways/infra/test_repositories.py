@@ -44,6 +44,26 @@ class FirebaseUserRepositoryTests(InfraTestCase):
 
         self._user_repository.save(self._steve)
 
+    def test_should_find_billing_by_id_return_billing_when_billing_exists(self):
+        self._steve.add_billing(self._billing)
+
+        self._user_repository.save(self._steve)
+
+        billing = self._user_repository.find_billing_by_id(self._billing.uid)
+
+        self.assertIsInstance(billing, Billing)
+
+    def test_should_find_billing_by_id_return_none_when_billing_not_exists(self):
+        self._steve.add_billing(self._billing)
+
+        self._user_repository.save(self._steve)
+
+        fake_id = uuid.uuid4()
+
+        billing = self._user_repository.find_billing_by_id(fake_id)
+
+        self.assertIsNone(billing)
+
     def tearDown(self):
         self._delete_user()
         self._delete_user_document()

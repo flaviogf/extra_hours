@@ -1,9 +1,11 @@
 import uuid
+from datetime import datetime
 
 from firebase_admin import firestore
 from firebase_admin.auth import AuthError, get_user
 
-from extra_hours.billing.entities import User
+from extra_hours.billing.entities import User, Billing
+from extra_hours.billing.value_objects import BillingSummary
 
 
 class FirebaseUserRepository:
@@ -29,3 +31,28 @@ class FirebaseUserRepository:
         for billing in user.billing:
             billing_document = billing_collection.document(str(billing.uid))
             billing_document.set(billing.to_dict())
+
+    def find_billing_by_id(self, billing_id):
+        db = firestore.client()
+
+        users = db.collection('user').list_documents()
+
+        billings = [b.get().to_dict() for u in users
+                    for b in u.collection('billing').list_documents()
+                    if b.id == str(billing_id)]
+
+        billing_dict = billings[0] if billings else None
+
+        if not billing_dict:
+            return
+
+        work_date = billing_dict['work_date']
+
+        work_date = datetime.strptime(work_date, '%Y-%m-%d')
+
+        summary = BillingSummary(title=billing_dict['title'],
+                                 description=billing_dict['description'],
+                                 value=billing_dict['value'],
+                                 work_date=work_date)
+
+        return Billing(summary=summary, uid=billing_id)

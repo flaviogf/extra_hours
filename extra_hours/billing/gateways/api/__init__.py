@@ -5,7 +5,7 @@ from flask import Flask
 
 from extra_hours.billing.gateways.api.views import create_billing_bp
 from extra_hours.billing.gateways.infra.repositories import FirebaseUserRepository
-from extra_hours.billing.use_case import CreateBilling
+from extra_hours.billing.use_case import CreateBilling, ConfirmReceiveBilling
 
 
 def create_app():
@@ -13,7 +13,8 @@ def create_app():
 
     initialize_firebase()
 
-    billing_bp = create_billing_bp(get_create_billing)
+    billing_bp = create_billing_bp(get_create_billing,
+                                   get_confirm_billing_receive)
 
     app.register_blueprint(billing_bp)
 
@@ -23,6 +24,11 @@ def create_app():
 def get_create_billing():
     user_repository = FirebaseUserRepository()
     return CreateBilling(user_repository)
+
+
+def get_confirm_billing_receive():
+    user_repository = FirebaseUserRepository()
+    return ConfirmReceiveBilling(user_repository)
 
 
 def initialize_firebase():
