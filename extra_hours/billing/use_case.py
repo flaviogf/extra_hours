@@ -111,6 +111,8 @@ class UpdateBilling(UseCase):
         if not self.is_valid:
             return
 
+        user.add_billing(billing)
+
         user.update_billing_summary(billing, billing_summary)
 
         self._user_repository.save(user)

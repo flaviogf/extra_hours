@@ -4,12 +4,13 @@ from flask import Blueprint, jsonify, request
 
 from extra_hours.billing.commands import (CreateBillingCommand,
                                           ConfirmReceiveBillingCommand,
-                                          CancelReceiveBillingCommand)
+                                          CancelReceiveBillingCommand, UpdateBillingCommand)
 
 
 def create_billing_bp(get_create_billing,
                       get_confirm_receive_billing,
-                      get_cancel_receive_billing):
+                      get_cancel_receive_billing,
+                      get_update_billing):
     billing_bp = Blueprint('billing', __name__)
 
     @billing_bp.route('/api/v1/billing', methods=['post'])
@@ -64,6 +65,30 @@ def create_billing_bp(get_create_billing,
 
         if not cancel_receive_billing.is_valid:
             return jsonify([n.message for n in cancel_receive_billing.notifications]), 400
+
+        return jsonify('ok'), 204
+
+    @billing_bp.route('/api/v1/billing/<uuid:billing_id>', methods=['put'])
+    def update_billing_view(billing_id):
+        json = request.get_json()
+
+        work_date = json.get('work_date', None)
+
+        work_date = datetime.strptime(work_date, '%Y-%m-%d') if work_date else datetime.today()
+
+        command = UpdateBillingCommand(user_id=json.get('user_id', ''),
+                                       billing_id=json.get('billing_id', ''),
+                                       title=json.get('title', ''),
+                                       description=json.get('description', ''),
+                                       value=json.get('value', 0.0),
+                                       work_date=work_date)
+
+        update_billing = get_update_billing()
+
+        update_billing.execute(command)
+
+        if not update_billing.is_valid:
+            return jsonify([n.message for n in update_billing.notifications]), 400
 
         return jsonify('ok'), 204
 
