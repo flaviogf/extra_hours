@@ -13,9 +13,11 @@ class BillingViewTestCase(unittest.TestCase):
     def setUp(self):
         self._create_billing = Mock()
         self._confirm_receive_billing = Mock()
+        self._cancel_receive_billing = Mock()
 
         self._billing_bp = create_billing_bp(Mock(return_value=self._create_billing),
-                                             Mock(return_value=self._confirm_receive_billing))
+                                             Mock(return_value=self._confirm_receive_billing),
+                                             Mock(return_value=self._cancel_receive_billing))
 
         self._app = Flask(__name__)
 
@@ -131,5 +133,66 @@ class ConfirmReceiveBillingView(BillingViewTestCase):
         json = {'user_id': user_id, 'billing_id': billing_id}
 
         response = self._client.post(f'/api/v1/billing/{billing_id}/confirm-receive', json=json)
+
+        self.assertListEqual(['user not exists'], response.json)
+
+
+class CancelReceiveBillingView(BillingViewTestCase):
+    def test_should_return_status_code_no_content_when_use_case_is_valid(self):
+        billing_id = uuid.uuid4()
+        user_id = uuid.uuid4()
+
+        json = {
+            'billing_id': billing_id,
+            'user_id': user_id,
+        }
+
+        response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive', json=json)
+
+        self.assertEqual(204, response.status_code)
+
+    def test_should_return_status_code_bad_request_when_use_case_not_is_valid(self):
+        user_not_exists = Notification('user', 'user not exists')
+
+        is_valid = PropertyMock(return_value=False)
+        notifications = PropertyMock(return_value=[user_not_exists])
+
+        type(self._cancel_receive_billing).is_valid = is_valid
+        type(self._cancel_receive_billing).notifications = notifications
+
+        billing_id = uuid.uuid4()
+        user_id = uuid.uuid4()
+
+        json = {
+            'billing_id': billing_id,
+            'user_id': user_id,
+        }
+
+        billing_id = uuid.uuid4()
+
+        response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive', json=json)
+
+        self.assertEqual(400, response.status_code)
+
+    def test_should_return_list_of_notifications_when_use_case_not_is_valid(self):
+        user_not_exists = Notification('user', 'user not exists')
+
+        is_valid = PropertyMock(return_value=False)
+        notifications = PropertyMock(return_value=[user_not_exists])
+
+        type(self._cancel_receive_billing).is_valid = is_valid
+        type(self._cancel_receive_billing).notifications = notifications
+
+        billing_id = uuid.uuid4()
+        user_id = uuid.uuid4()
+
+        json = {
+            'billing_id': billing_id,
+            'user_id': user_id,
+        }
+
+        billing_id = uuid.uuid4()
+
+        response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive', json=json)
 
         self.assertListEqual(['user not exists'], response.json)

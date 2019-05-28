@@ -78,6 +78,8 @@ class CancelReceiveBilling(UseCase):
         if not self.is_valid:
             return
 
+        user.add_billing(billing)
+
         user.cancel_receive(billing)
 
         self._user_repository.save(user)
