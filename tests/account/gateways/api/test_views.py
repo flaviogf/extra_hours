@@ -4,7 +4,7 @@ from unittest.mock import Mock, PropertyMock
 from flask import Flask
 from pyflunt.notifications import Notification
 
-from extra_hours.account.gateways.api.views import create_bp_account
+from extra_hours.account.gateways.api.views import create_account_bp
 
 
 class AccountViewTests(unittest.TestCase):
@@ -16,7 +16,7 @@ class AccountViewTests(unittest.TestCase):
         self._resets_password = Mock()
         self._change_user_password = Mock()
 
-        self._bp_account = create_bp_account(Mock(return_value=self._create_user),
+        self._bp_account = create_account_bp(Mock(return_value=self._create_user),
                                              Mock(return_value=self._authenticate_user),
                                              Mock(return_value=self._resets_password),
                                              Mock(return_value=self._change_user_password))

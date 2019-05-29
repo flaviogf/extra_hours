@@ -6,7 +6,7 @@ from extra_hours.account.commands import (AuthenticateUserCommand,
                                           ChangeUserPasswordCommand)
 
 
-def create_bp_account(get_create_user,
+def create_account_bp(get_create_user,
                       get_authenticate_user,
                       get_resets_password,
                       get_change_user_password):
