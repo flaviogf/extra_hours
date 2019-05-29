@@ -1,25 +1,9 @@
-from dataclasses import dataclass
+from collections import namedtuple
 
+CreateUserCommand = namedtuple('CreateUserCommand', ['email', 'password'])
 
-@dataclass
-class CreateUserCommand:
-    email: str
-    password: str
+AuthenticateUserCommand = namedtuple('AuthenticateUserCommand', ['email', 'password'])
 
+ResetsPasswordCommand = namedtuple('ResetsPasswordCommand', ['email'])
 
-@dataclass
-class AuthenticateUserCommand:
-    email: str
-    password: str
-
-
-@dataclass
-class ResetsPasswordCommand:
-    email: str
-
-
-@dataclass
-class ChangeUserPasswordCommand:
-    email: str
-    old_password: str
-    new_password: str
+ChangeUserPasswordCommand = namedtuple('ChangeUserPasswordCommand', ['email', 'old_password', 'new_password'])
