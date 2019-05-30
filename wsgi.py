@@ -66,7 +66,7 @@ def initialize_firebase():
     initialize_app(cred)
 
 
-application = Flask(__name__)
+app = Flask(__name__)
 
 initialize_firebase()
 
@@ -80,5 +80,8 @@ billing_bp = create_billing_bp(get_create_billing,
                                get_cancel_receive_billing,
                                get_update_billing)
 
-application.register_blueprint(bp_account)
-application.register_blueprint(billing_bp)
+app.register_blueprint(bp_account)
+app.register_blueprint(billing_bp)
+
+if __name__ == '__main__':
+    app.run()
