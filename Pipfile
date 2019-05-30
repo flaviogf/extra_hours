@@ -12,6 +12,7 @@ coverage = "*"
 pyflunt = "==1.0.0"
 flask = "==1.0.3"
 firebase-admin = "==2.16.0"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"

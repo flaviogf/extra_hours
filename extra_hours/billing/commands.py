@@ -1,35 +1,18 @@
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional
-from uuid import UUID
+from collections import namedtuple
 
+CreateBillingCommand = namedtuple('CreateBillingCommand', ['user_id',
+                                                           'title',
+                                                           'description',
+                                                           'value',
+                                                           'work_date'])
 
-@dataclass
-class CreateBillingCommand:
-    user_id: UUID
-    title: str
-    description: str
-    value: float
-    work_date: Optional[datetime]
+ConfirmReceiveBillingCommand = namedtuple('ConfirmReceiveBillingCommand', ['user_id', 'billing_id'])
 
+CancelReceiveBillingCommand = namedtuple('CancelReceiveBillingCommand', ['user_id', 'billing_id'])
 
-@dataclass
-class ConfirmReceiveBillingCommand:
-    user_id: UUID
-    billing_id: UUID
-
-
-@dataclass
-class CancelReceiveBillingCommand:
-    user_id: UUID
-    billing_id: UUID
-
-
-@dataclass
-class UpdateBillingCommand:
-    user_id: UUID
-    billing_id: UUID
-    title: str
-    description: str
-    value: float
-    work_date: Optional[datetime]
+UpdateBillingCommand = namedtuple('UpdateBillingCommand', ['user_id',
+                                                           'billing_id',
+                                                           'title',
+                                                           'description',
+                                                           'value',
+                                                           'work_date'])
