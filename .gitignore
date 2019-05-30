@@ -106,7 +106,5 @@ venv.bak/
 # IDE
 .idea
 
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+# Azure Web Apps
+requirements.txt
