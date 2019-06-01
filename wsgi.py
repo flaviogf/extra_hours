@@ -4,6 +4,7 @@ from os.path import dirname, join
 from firebase_admin import credentials, initialize_app
 from flask import Flask
 from flask.json import jsonify
+from flask_caching import Cache
 
 from extra_hours.account.gateways.api.middlewares import init_account_middleware
 from extra_hours.account.gateways.api.views import init_account_bp
@@ -75,6 +76,8 @@ def initialize_firebase():
 
 app = Flask(__name__)
 
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
 initialize_firebase()
 
 init_account_middleware(app, Config)
@@ -93,6 +96,7 @@ init_billing_bp(app,
 
 
 @app.route('/')
+@cache.cached(300)
 def index():
     return jsonify(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 

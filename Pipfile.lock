@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a8836971ae1ef77b21479a08782b1ffe85224f1a213cd876c0232fea9af49aae"
+            "sha256": "95ce963c66587143e095ddb235bfabdcfaa1efd570e1a1b90487e373c68bdeaf"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -65,12 +65,13 @@
             "index": "pypi",
             "version": "==1.0.3"
         },
-        "flask-cache": {
+        "flask-caching": {
             "hashes": [
-                "sha256:90126ca9bc063854ef8ee276e95d38b2b4ec8e45fd77d5751d37971ee27c7ef4"
+                "sha256:52e236cbc836c41a5ced0c0a67b48ad180c9e2b5cb69e881089bba766db5569e",
+                "sha256:b0daabd5249bebfbae3da4c22987bac22047fc8b18ea2716c4fc63d57d218946"
             ],
             "index": "pypi",
-            "version": "==0.13.1"
+            "version": "==1.7.2"
         },
         "google-api-core": {
             "extras": [
