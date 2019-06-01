@@ -12,8 +12,8 @@ coverage = "==4.5.3"
 pyflunt = "==1.0.0"
 flask = "==1.0.3"
 firebase-admin = "==2.16.0"
-pyjwt = "*"
-flask-cache = "*"
+pyjwt = "==1.7.1"
+flask-cache = "==0.13.1"
 
 [requires]
 python_version = "3.7"
