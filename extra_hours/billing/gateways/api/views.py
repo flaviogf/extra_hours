@@ -1,16 +1,18 @@
 from datetime import datetime
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 
 from extra_hours.billing.commands import (CreateBillingCommand,
                                           ConfirmReceiveBillingCommand,
                                           CancelReceiveBillingCommand, UpdateBillingCommand)
 
 
-def create_billing_bp(get_create_billing,
-                      get_confirm_receive_billing,
-                      get_cancel_receive_billing,
-                      get_update_billing):
+def init_billing_bp(app,
+                    *,
+                    get_create_billing,
+                    get_confirm_receive_billing,
+                    get_cancel_receive_billing,
+                    get_update_billing):
     billing_bp = Blueprint('billing', __name__)
 
     @billing_bp.route('/api/v1/billing', methods=['post'])
@@ -21,7 +23,7 @@ def create_billing_bp(get_create_billing,
 
         work_date = datetime.strptime(work_date, '%Y-%m-%d') if work_date else datetime.today()
 
-        command = CreateBillingCommand(user_id=json.get('user_id', ''),
+        command = CreateBillingCommand(user_id=g.user.get('uid', ''),
                                        title=json.get('title', ''),
                                        description=json.get('description', ''),
                                        value=json.get('value', 0.0),
@@ -40,7 +42,7 @@ def create_billing_bp(get_create_billing,
     def confirm_receive_billing_view(billing_id):
         json = request.get_json()
 
-        command = ConfirmReceiveBillingCommand(user_id=json.get('user_id', ''),
+        command = ConfirmReceiveBillingCommand(user_id=g.user.get('uid', ''),
                                                billing_id=json.get('billing_id', ''))
 
         confirm_receive_billing = get_confirm_receive_billing()
@@ -56,8 +58,8 @@ def create_billing_bp(get_create_billing,
     def cancel_receive_billing_view(billing_id):
         json = request.get_json()
 
-        command = CancelReceiveBillingCommand(user_id=json['user_id'],
-                                              billing_id=json['billing_id'])
+        command = CancelReceiveBillingCommand(user_id=g.user.get('uid', ''),
+                                              billing_id=json.get('billing_id', ''))
 
         cancel_receive_billing = get_cancel_receive_billing()
 
@@ -76,7 +78,7 @@ def create_billing_bp(get_create_billing,
 
         work_date = datetime.strptime(work_date, '%Y-%m-%d') if work_date else datetime.today()
 
-        command = UpdateBillingCommand(user_id=json.get('user_id', ''),
+        command = UpdateBillingCommand(user_id=g.user.get('uid', ''),
                                        billing_id=json.get('billing_id', ''),
                                        title=json.get('title', ''),
                                        description=json.get('description', ''),
@@ -91,5 +93,7 @@ def create_billing_bp(get_create_billing,
             return jsonify([n.message for n in update_billing.notifications]), 400
 
         return jsonify('ok'), 204
+
+    app.register_blueprint(billing_bp)
 
     return billing_bp

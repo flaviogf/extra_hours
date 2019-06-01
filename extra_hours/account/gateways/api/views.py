@@ -6,13 +6,15 @@ from extra_hours.account.commands import (AuthenticateUserCommand,
                                           ChangeUserPasswordCommand)
 
 
-def create_account_bp(get_create_user,
-                      get_authenticate_user,
-                      get_resets_password,
-                      get_change_user_password):
-    account = Blueprint('account', __name__)
+def init_account_bp(app,
+                    *,
+                    get_create_user,
+                    get_authenticate_user,
+                    get_resets_password,
+                    get_change_user_password):
+    account_bp = Blueprint('account', __name__)
 
-    @account.route('/api/v1/account', methods=['post'])
+    @account_bp.route('/api/v1/account', methods=['post'])
     def create_user_view():
         json = request.get_json()
 
@@ -28,7 +30,7 @@ def create_account_bp(get_create_user,
 
         return jsonify('user created'), 201
 
-    @account.route('/api/v1/account/authenticate', methods=['post'])
+    @account_bp.route('/api/v1/account/authenticate', methods=['post'])
     def authenticate_user_view():
         json = request.get_json()
 
@@ -44,7 +46,7 @@ def create_account_bp(get_create_user,
 
         return jsonify(token), 200
 
-    @account.route('/api/v1/account/<string:email>/resets-password')
+    @account_bp.route('/api/v1/account/<string:email>/resets-password')
     def resets_password_view(email):
         command = ResetsPasswordCommand(email=email)
 
@@ -57,7 +59,7 @@ def create_account_bp(get_create_user,
 
         return jsonify('ok'), 204
 
-    @account.route('/api/v1/account/<string:email>/change-password', methods=['post'])
+    @account_bp.route('/api/v1/account/<string:email>/change-password', methods=['post'])
     def change_user_password_view(email):
         json = request.get_json()
 
@@ -74,4 +76,6 @@ def create_account_bp(get_create_user,
 
         return jsonify('ok'), 204
 
-    return account
+    app.register_blueprint(account_bp)
+
+    return account_bp
