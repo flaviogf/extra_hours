@@ -1,11 +1,15 @@
 import uuid
 
+import jwt
 import requests
 
 from extra_hours.account.entities import User
 
 
 class FirebaseUserService:
+    def __init__(self, config):
+        self._config = config
+
     def sign_with_email_and_password(self, email, password):
         url_api = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key={}'
 
@@ -21,7 +25,12 @@ class FirebaseUserService:
 
         json = response.json()
 
-        token = json['idToken']
+        payload = {
+            'uid': json['localId'],
+            'email': email,
+        }
+
+        token = jwt.encode(payload, self._config.SECRET_KEY).decode('utf-8')
 
         user = User(email=email,
                     password=password,

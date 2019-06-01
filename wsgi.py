@@ -18,13 +18,17 @@ from extra_hours.billing.use_case import (CreateBilling,
                                           UpdateBilling)
 
 
+class Config:
+    SECRET_KEY = ')u=#7@=e7$w1ea06wz%)c=w(h9vdn!^4($@tl7^fd=m5u6mvb^'
+
+
 def get_create_user():
     user_repository = AccountFirebaseUserRepository()
     return CreateUser(user_repository)
 
 
 def get_authenticate_user():
-    user_service = FirebaseUserService()
+    user_service = FirebaseUserService(Config)
     return AuthenticateUser(user_service)
 
 
@@ -35,7 +39,7 @@ def get_resets_password():
 
 def get_change_user_password():
     user_repository = AccountFirebaseUserRepository()
-    user_service = FirebaseUserService()
+    user_service = FirebaseUserService(Config)
     return ChangeUserPassword(user_repository, user_service)
 
 
