@@ -4,15 +4,16 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-tox = "*"
-pytest = "*"
-coverage = "*"
+tox = "==3.12.1"
+pytest = "==4.5.0"
+coverage = "==4.5.3"
 
 [packages]
 pyflunt = "==1.0.0"
 flask = "==1.0.3"
 firebase-admin = "==2.16.0"
-gunicorn = "*"
+pyjwt = "==1.7.1"
+flask-cache = "==0.13.1"
 
 [requires]
 python_version = "3.7"

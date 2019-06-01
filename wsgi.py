@@ -1,21 +1,28 @@
+from datetime import datetime
 from os.path import dirname, join
 
 from firebase_admin import credentials, initialize_app
 from flask import Flask
+from flask.json import jsonify
 
-from extra_hours.account.gateways.api.views import create_account_bp
+from extra_hours.account.gateways.api.middlewares import init_account_middleware
+from extra_hours.account.gateways.api.views import init_account_bp
 from extra_hours.account.gateways.infra.repositories import FirebaseUserRepository as AccountFirebaseUserRepository
 from extra_hours.account.gateways.infra.services import FirebaseUserService
 from extra_hours.account.use_case import (AuthenticateUser,
                                           CreateUser,
                                           ResetsPassword,
                                           ChangeUserPassword)
-from extra_hours.billing.gateways.api.views import create_billing_bp
+from extra_hours.billing.gateways.api.views import init_billing_bp
 from extra_hours.billing.gateways.infra.repositories import FirebaseUserRepository as BillingFirebaseUserRepository
 from extra_hours.billing.use_case import (CreateBilling,
                                           ConfirmReceiveBilling,
                                           CancelReceiveBilling,
                                           UpdateBilling)
+
+
+class Config:
+    SECRET_KEY = ')u=#7@=e7$w1ea06wz%)c=w(h9vdn!^4($@tl7^fd=m5u6mvb^'
 
 
 def get_create_user():
@@ -24,7 +31,7 @@ def get_create_user():
 
 
 def get_authenticate_user():
-    user_service = FirebaseUserService()
+    user_service = FirebaseUserService(Config)
     return AuthenticateUser(user_service)
 
 
@@ -35,7 +42,7 @@ def get_resets_password():
 
 def get_change_user_password():
     user_repository = AccountFirebaseUserRepository()
-    user_service = FirebaseUserService()
+    user_service = FirebaseUserService(Config)
     return ChangeUserPassword(user_repository, user_service)
 
 
@@ -70,18 +77,25 @@ app = Flask(__name__)
 
 initialize_firebase()
 
-bp_account = create_account_bp(get_create_user,
-                               get_authenticate_user,
-                               get_resets_password,
-                               get_change_user_password)
+init_account_middleware(app, Config)
 
-billing_bp = create_billing_bp(get_create_billing,
-                               get_confirm_receive_billing,
-                               get_cancel_receive_billing,
-                               get_update_billing)
+init_account_bp(app,
+                get_create_user=get_create_user,
+                get_authenticate_user=get_authenticate_user,
+                get_resets_password=get_resets_password,
+                get_change_user_password=get_change_user_password)
 
-app.register_blueprint(bp_account)
-app.register_blueprint(billing_bp)
+init_billing_bp(app,
+                get_create_billing=get_create_billing,
+                get_confirm_receive_billing=get_confirm_receive_billing,
+                get_cancel_receive_billing=get_cancel_receive_billing,
+                get_update_billing=get_update_billing)
+
+
+@app.route('/')
+def index():
+    return jsonify(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
 
 if __name__ == '__main__':
     app.run()

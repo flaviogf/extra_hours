@@ -1,4 +1,5 @@
 import uuid
+from unittest.mock import Mock, PropertyMock
 
 from firebase_admin.auth import create_user, list_users, delete_user
 
@@ -11,25 +12,25 @@ class FirebaseUserServiceTests(InfraTestCase):
     def setUp(self):
         create_user(email='captain@marvel.com', password='test12345', uid=str(uuid.uuid4()))
 
-    def test_should_return_user_when_user_authenticated(self):
-        user_service = FirebaseUserService()
+        config = Mock()
 
-        user, _ = user_service.sign_with_email_and_password(email='captain@marvel.com', password='test12345')
+        type(config).SECRET_KEY = PropertyMock(return_value='test')
+
+        self._user_service = FirebaseUserService(config)
+
+    def test_should_return_user_when_user_authenticated(self):
+        user, _ = self._user_service.sign_with_email_and_password(email='captain@marvel.com', password='test12345')
 
         self.assertIsInstance(user, User)
 
     def test_should_return_token_when_user_authenticated(self):
-        user_service = FirebaseUserService()
-
-        _, token = user_service.sign_with_email_and_password(email='captain@marvel.com', password='test12345')
+        _, token = self._user_service.sign_with_email_and_password(email='captain@marvel.com', password='test12345')
 
         self.assertIsInstance(token, str)
 
     def test_should_return_tuple_of_none_when_user_not_authenticated(self):
-        user_service = FirebaseUserService()
-
-        user, token = user_service.sign_with_email_and_password(email='flavio.fernandes@gmail.com',
-                                                                password='test12345')
+        user, token = self._user_service.sign_with_email_and_password(email='flavio.fernandes@gmail.com',
+                                                                      password='test12345')
 
         self.assertIsNone(user)
         self.assertIsNone(token)
