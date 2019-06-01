@@ -108,3 +108,4 @@ venv.bak/
 
 # Azure Web Apps
 requirements.txt
+.azure
