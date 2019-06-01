@@ -1,7 +1,9 @@
+from datetime import datetime
 from os.path import dirname, join
 
 from firebase_admin import credentials, initialize_app
 from flask import Flask
+from flask.json import jsonify
 
 from extra_hours.account.gateways.api.middlewares import init_account_middleware
 from extra_hours.account.gateways.api.views import init_account_bp
@@ -88,6 +90,12 @@ init_billing_bp(app,
                 get_confirm_receive_billing=get_confirm_receive_billing,
                 get_cancel_receive_billing=get_cancel_receive_billing,
                 get_update_billing=get_update_billing)
+
+
+@app.route('/')
+def index():
+    return jsonify(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
 
 if __name__ == '__main__':
     app.run()
