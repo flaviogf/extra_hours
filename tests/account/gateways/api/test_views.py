@@ -74,7 +74,9 @@ class CreateUserViewTests(AccountViewTests):
 
         response = self._client.post('/api/v1/account', json=json)
 
-        self.assertListEqual(['invalid name'], response.json)
+        returned_notifications = response.json['errors']
+
+        self.assertListEqual(['invalid name'], returned_notifications)
 
 
 class AuthenticateUserViewTests(AccountViewTests):
@@ -134,7 +136,9 @@ class AuthenticateUserViewTests(AccountViewTests):
 
         response = self._client.post('/api/v1/account/authenticate', json=json)
 
-        self.assertListEqual(['user not authenticate'], response.json)
+        returned_notifications = response.json['errors']
+
+        self.assertListEqual(['user not authenticate'], returned_notifications)
 
 
 class ResetsPasswordViewTests(AccountViewTests):
@@ -147,9 +151,9 @@ class ResetsPasswordViewTests(AccountViewTests):
 
         email = 'captain@marvel.com'
 
-        response = self._client.get(f'/api/v1/account/{email}/resets-password')
+        response = self._client.post(f'/api/v1/account/{email}/resets-password')
 
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_should_return_status_code_bad_request_when_use_case_not_is_valid(self):
         email_invalid = Notification('email', 'email invalid')
@@ -162,7 +166,7 @@ class ResetsPasswordViewTests(AccountViewTests):
 
         email = 'captain@marvel.com'
 
-        response = self._client.get(f'/api/v1/account/{email}/resets-password')
+        response = self._client.post(f'/api/v1/account/{email}/resets-password')
 
         self.assertEqual(400, response.status_code)
 
@@ -177,13 +181,15 @@ class ResetsPasswordViewTests(AccountViewTests):
 
         email = 'captain@marvel.com'
 
-        response = self._client.get(f'/api/v1/account/{email}/resets-password')
+        response = self._client.post(f'/api/v1/account/{email}/resets-password')
 
-        self.assertListEqual(['email invalid'], response.json)
+        returned_notifications = response.json['errors']
+
+        self.assertListEqual(['email invalid'], returned_notifications)
 
 
 class ChangeUserPasswordViewTests(AccountViewTests):
-    def test_should_return_status_no_content_when_use_case_is_valid(self):
+    def test_should_return_status_ok_when_use_case_is_valid(self):
         email = 'captain@marvel.com'
 
         json = {
@@ -193,7 +199,7 @@ class ChangeUserPasswordViewTests(AccountViewTests):
 
         response = self._client.post(f'/api/v1/account/{email}/change-password', json=json)
 
-        self.assertEqual(204, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_should_return_status_bad_request_when_use_case_not_is_valid(self):
         user_not_authenticate = Notification('user', 'user not authenticate')
@@ -233,4 +239,6 @@ class ChangeUserPasswordViewTests(AccountViewTests):
 
         response = self._client.post(f'/api/v1/account/{email}/change-password', json=json)
 
-        self.assertListEqual(['user not authenticate'], response.json)
+        returned_notifications = response.json['errors']
+
+        self.assertListEqual(['user not authenticate'], returned_notifications)

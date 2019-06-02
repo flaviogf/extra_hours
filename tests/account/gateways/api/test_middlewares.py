@@ -45,6 +45,16 @@ class AccountMiddlewareTests(unittest.TestCase):
 
             self.assertDictEqual({}, g.user)
 
+    def test_should_user_not_is_available_in_flask_global_context_when_token_is_invalid(self):
+        self._create_fake_route()
+
+        init_account_middleware(self._app, self._config)
+
+        with self._app.test_request_context('/', headers={'Authorization': 'test'}):
+            self._app.preprocess_request()
+
+            self.assertDictEqual({}, g.user)
+
     def _create_fake_route(self):
         @self._app.route('/')
         def index():

@@ -3,7 +3,6 @@ from os.path import dirname, join
 
 from firebase_admin import credentials, initialize_app
 from flask import Flask
-from flask.json import jsonify
 from flask_caching import Cache
 
 from extra_hours.account.gateways.api.middlewares import init_account_middleware
@@ -20,6 +19,7 @@ from extra_hours.billing.use_case import (CreateBilling,
                                           ConfirmReceiveBilling,
                                           CancelReceiveBilling,
                                           UpdateBilling)
+from extra_hours.shared.gateways.api.responses import ok
 
 
 class Config:
@@ -98,7 +98,7 @@ init_billing_bp(app,
 @app.route('/')
 @cache.cached(300)
 def index():
-    return jsonify(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    return ok(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 
 if __name__ == '__main__':

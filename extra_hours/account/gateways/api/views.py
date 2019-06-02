@@ -1,9 +1,10 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 
 from extra_hours.account.commands import (AuthenticateUserCommand,
                                           CreateUserCommand,
                                           ResetsPasswordCommand,
                                           ChangeUserPasswordCommand)
+from extra_hours.shared.gateways.api.responses import bad_request, no_authorized, created, ok
 
 
 def init_account_bp(app,
@@ -26,9 +27,9 @@ def init_account_bp(app,
         create_user.execute(command)
 
         if not create_user.is_valid:
-            return jsonify([n.message for n in create_user.notifications]), 400
+            return bad_request([n.message for n in create_user.notifications])
 
-        return jsonify('user created'), 201
+        return created('user created')
 
     @account_bp.route('/api/v1/account/authenticate', methods=['post'])
     def authenticate_user_view():
@@ -42,11 +43,11 @@ def init_account_bp(app,
         token = authenticate_user.execute(command)
 
         if not authenticate_user.is_valid:
-            return jsonify([n.message for n in authenticate_user.notifications]), 401
+            return no_authorized([n.message for n in authenticate_user.notifications])
 
-        return jsonify(token), 200
+        return ok(token)
 
-    @account_bp.route('/api/v1/account/<string:email>/resets-password')
+    @account_bp.route('/api/v1/account/<string:email>/resets-password', methods=['post'])
     def resets_password_view(email):
         command = ResetsPasswordCommand(email=email)
 
@@ -55,9 +56,9 @@ def init_account_bp(app,
         resets_password.execute(command)
 
         if not resets_password.is_valid:
-            return jsonify([n.message for n in resets_password.notifications]), 400
+            return bad_request([n.message for n in resets_password.notifications])
 
-        return jsonify('ok'), 204
+        return ok('password resets')
 
     @account_bp.route('/api/v1/account/<string:email>/change-password', methods=['post'])
     def change_user_password_view(email):
@@ -72,9 +73,9 @@ def init_account_bp(app,
         change_user_password.execute(command)
 
         if not change_user_password.is_valid:
-            return jsonify([n.message for n in change_user_password.notifications]), 400
+            return bad_request([n.message for n in change_user_password.notifications])
 
-        return jsonify('ok'), 204
+        return ok('password changed')
 
     app.register_blueprint(account_bp)
 
