@@ -1,5 +1,6 @@
 import jwt
 from flask import request, g
+from jwt import DecodeError
 
 
 def init_account_middleware(app, config):
@@ -12,4 +13,7 @@ def init_account_middleware(app, config):
         if not token:
             return
 
-        g.user = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
+        try:
+            g.user = jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
+        except DecodeError:
+            pass

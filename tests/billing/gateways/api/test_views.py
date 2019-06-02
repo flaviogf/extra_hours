@@ -99,21 +99,21 @@ class CreateBillingView(BillingViewTestCase):
 
             response = self._client.post('/api/v1/billing', json=json)
 
-            self.assertListEqual(['user not exists'], response.json)
+            returned_notifications = response.json['errors']
+
+            self.assertListEqual(['user not exists'], returned_notifications)
 
 
 class ConfirmReceiveBillingView(BillingViewTestCase):
-    def test_should_return_status_code_no_content_when_use_case_is_valid(self):
+    def test_should_return_status_code_ok_when_use_case_is_valid(self):
         billing_id = uuid.uuid4()
-
-        json = {'billing_id': billing_id}
 
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.post(f'/api/v1/billing/{billing_id}/confirm-receive', json=json)
+            response = self._client.post(f'/api/v1/billing/{billing_id}/confirm-receive')
 
-            self.assertEqual(204, response.status_code)
+            self.assertEqual(200, response.status_code)
 
     def test_should_return_status_code_bad_request_when_use_case_not_is_valid(self):
         user_not_exists = Notification('user', 'user not exists')
@@ -126,12 +126,10 @@ class ConfirmReceiveBillingView(BillingViewTestCase):
 
         billing_id = uuid.uuid4()
 
-        json = {'billing_id': billing_id}
-
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.post(f'/api/v1/billing/{billing_id}/confirm-receive', json=json)
+            response = self._client.post(f'/api/v1/billing/{billing_id}/confirm-receive')
 
             self.assertEqual(400, response.status_code)
 
@@ -146,30 +144,26 @@ class ConfirmReceiveBillingView(BillingViewTestCase):
 
         billing_id = uuid.uuid4()
 
-        json = {'billing_id': billing_id}
-
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.post(f'/api/v1/billing/{billing_id}/confirm-receive', json=json)
+            response = self._client.post(f'/api/v1/billing/{billing_id}/confirm-receive')
 
-            self.assertListEqual(['user not exists'], response.json)
+            returned_notifications = response.json['errors']
+
+            self.assertListEqual(['user not exists'], returned_notifications)
 
 
 class CancelReceiveBillingView(BillingViewTestCase):
-    def test_should_return_status_code_no_content_when_use_case_is_valid(self):
+    def test_should_return_status_code_ok_when_use_case_is_valid(self):
         billing_id = uuid.uuid4()
-
-        json = {
-            'billing_id': billing_id,
-        }
 
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive', json=json)
+            response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive')
 
-            self.assertEqual(204, response.status_code)
+            self.assertEqual(200, response.status_code)
 
     def test_should_return_status_code_bad_request_when_use_case_not_is_valid(self):
         user_not_exists = Notification('user', 'user not exists')
@@ -182,14 +176,10 @@ class CancelReceiveBillingView(BillingViewTestCase):
 
         billing_id = uuid.uuid4()
 
-        json = {
-            'billing_id': billing_id,
-        }
-
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive', json=json)
+            response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive')
 
             self.assertEqual(400, response.status_code)
 
@@ -204,16 +194,14 @@ class CancelReceiveBillingView(BillingViewTestCase):
 
         billing_id = uuid.uuid4()
 
-        json = {
-            'billing_id': billing_id,
-        }
-
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive', json=json)
+            response = self._client.post(f'/api/v1/billing/{billing_id}/cancel-receive')
 
-            self.assertListEqual(['user not exists'], response.json)
+            returned_notifications = response.json['errors']
+
+            self.assertListEqual(['user not exists'], returned_notifications)
 
 
 class UpdateBillingViewTests(BillingViewTestCase):
@@ -222,7 +210,6 @@ class UpdateBillingViewTests(BillingViewTestCase):
         work_date = datetime.now().strftime('%Y-%m-%d')
 
         json = {
-            'billing_id': str(billing_id),
             'title': 'gas station',
             'description': 'before today',
             'value': 250.99,
@@ -232,9 +219,9 @@ class UpdateBillingViewTests(BillingViewTestCase):
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.put(f'/api/v1/billing/{billing_id}', json=json)
+            response = self._client.put(f'/api/v1/billing/{str(billing_id)}', json=json)
 
-            self.assertEqual(204, response.status_code)
+            self.assertEqual(200, response.status_code)
 
     def test_should_return_status_bad_request_when_use_case_not_is_valid(self):
         user_not_exists = Notification('user', 'user not exists')
@@ -249,7 +236,6 @@ class UpdateBillingViewTests(BillingViewTestCase):
         work_date = datetime.now().strftime('%Y-%m-%d')
 
         json = {
-            'billing_id': str(billing_id),
             'title': 'gas station',
             'description': 'before today',
             'value': 250.99,
@@ -259,7 +245,7 @@ class UpdateBillingViewTests(BillingViewTestCase):
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.put(f'/api/v1/billing/{billing_id}', json=json)
+            response = self._client.put(f'/api/v1/billing/{str(billing_id)}', json=json)
 
             self.assertEqual(400, response.status_code)
 
@@ -276,7 +262,6 @@ class UpdateBillingViewTests(BillingViewTestCase):
         work_date = datetime.now().strftime('%Y-%m-%d')
 
         json = {
-            'billing_id': str(billing_id),
             'title': 'gas station',
             'description': 'before today',
             'value': 250.99,
@@ -286,6 +271,8 @@ class UpdateBillingViewTests(BillingViewTestCase):
         with self._app.app_context():
             self._set_user()
 
-            response = self._client.put(f'/api/v1/billing/{billing_id}', json=json)
+            response = self._client.put(f'/api/v1/billing/{str(billing_id)}', json=json)
 
-            self.assertListEqual(['user not exists'], response.json)
+            returned_notifications = response.json['errors']
+
+            self.assertListEqual(['user not exists'], returned_notifications)
