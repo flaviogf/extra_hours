@@ -7,13 +7,14 @@ verify_ssl = true
 tox = "==3.12.1"
 pytest = "==4.5.0"
 coverage = "==4.5.3"
+requests = "==2.22.0"
 
 [packages]
 pyflunt = "==1.0.0"
-flask = "==1.0.3"
-firebase-admin = "==2.16.0"
 pyjwt = "==1.7.1"
-flask-caching = "==1.7.2"
+fastapi = "==0.29.1"
+uvicorn = "==0.7.2"
+email-validator = "==1.0.4"
 
 [requires]
 python_version = "3.7"
