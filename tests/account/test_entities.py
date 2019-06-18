@@ -120,8 +120,8 @@ class UserTests(unittest.TestCase):
 
         expected = {
             'uid': str(user.uid),
-            'email': 'captain@marvel.com.br',
-            'password': 'test123567'
+            'email': str(email),
+            'password': str(password)
         }
 
         self.assertDictEqual(expected, user.to_dict())

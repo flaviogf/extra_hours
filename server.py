@@ -7,6 +7,12 @@ from extra_hours.account.use_case import CreateUser, AuthenticateUser, ResetsPas
 from extra_hours.billing.gateways.api.views import init_billing
 from extra_hours.billing.gateways.infra import repositories as billing_repositories
 from extra_hours.billing.use_case import CreateBilling, ConfirmReceiveBilling, CancelReceiveBilling, UpdateBilling
+from extra_hours.shared.gateways.infra.uow import Uow
+
+
+class Config:
+    CONNECTION_STRING = 'sqlite:///db.sqlite3'
+    SECRET_KEY = '9BADBE64EE76C9EB87559BE2DB48F'
 
 
 def get_user(authorization=Header(None)):
@@ -15,29 +21,32 @@ def get_user(authorization=Header(None)):
 
 app = FastAPI(title='Extra Hours', version='v1')
 
+uow = Uow(Config.CONNECTION_STRING)
+
 
 def get_create_user():
-    user_repository = account_repositories.SqlAlchemyUserRepository()
+    user_repository = account_repositories.SqlAlchemyUserRepository(uow.session)
     return CreateUser(user_repository=user_repository)
 
 
 def get_authenticate_user():
-    user_repository = account_repositories.SqlAlchemyUserRepository()
-    token_service = JwtTokenService()
+    user_repository = account_repositories.SqlAlchemyUserRepository(uow.session)
+    token_service = JwtTokenService(Config.SECRET_KEY)
     return AuthenticateUser(user_repository=user_repository, token_service=token_service)
 
 
 def get_resets_password():
-    user_repository = account_repositories.SqlAlchemyUserRepository()
+    user_repository = account_repositories.SqlAlchemyUserRepository(uow.session)
     return ResetsPassword(user_repository=user_repository)
 
 
 def get_change_user_password():
-    user_repository = account_repositories.SqlAlchemyUserRepository()
+    user_repository = account_repositories.SqlAlchemyUserRepository(uow.session)
     return ChangeUserPassword(user_repository=user_repository)
 
 
 init_account(app,
+             uow=uow,
              get_create_user=get_create_user,
              get_authenticate_user=get_authenticate_user,
              get_resets_password=get_resets_password,

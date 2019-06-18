@@ -1,5 +1,6 @@
 import json
 import unittest
+from contextlib import contextmanager
 from unittest.mock import Mock, PropertyMock
 
 from fastapi import FastAPI
@@ -7,6 +8,11 @@ from pyflunt.notifications import Notification
 from starlette.testclient import TestClient
 
 from extra_hours.account.gateways.api.views import init_account
+
+
+@contextmanager
+def fake_uow():
+    yield
 
 
 class AccountViewTests(unittest.TestCase):
@@ -19,6 +25,7 @@ class AccountViewTests(unittest.TestCase):
         self._change_user_password = Mock()
 
         init_account(app,
+                     uow=fake_uow,
                      get_create_user=Mock(return_value=self._create_user),
                      get_authenticate_user=Mock(return_value=self._authenticate_user),
                      get_resets_password=Mock(return_value=self._resets_password),

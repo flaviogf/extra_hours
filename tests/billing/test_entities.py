@@ -125,7 +125,6 @@ class UserTests(unittest.TestCase):
         self._batman = User(uid=self._uid)
 
     def test_should_create_user_when_all_information_is_valid(self):
-        self.assertEqual(self._uid, self._batman.uid)
         self.assertTrue(self._batman.is_valid)
 
     def test_should_billing_is_empty_list_when_user_is_created(self):

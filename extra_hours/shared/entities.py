@@ -7,7 +7,11 @@ class Entity(Notifiable):
     def __init__(self, uid=None):
         super().__init__()
 
-        self.uid = uid or uuid.uuid4()
+        self._uid = uid or uuid.uuid4()
+
+    @property
+    def uid(self):
+        return str(self._uid)
 
     def __eq__(self, other):
         return self.uid == other.uid

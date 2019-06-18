@@ -1,12 +1,15 @@
+import hashlib
+
 from pyflunt.validations import Contract
 
 from extra_hours.shared.value_objects import ValueObject
 
 
 class Password(ValueObject):
-    def __init__(self, value):
+    def __init__(self, value, encrypt=True):
         super().__init__()
-        self._value = value
+
+        self._value = self._encrypt(value) if encrypt else value
 
         self.add_notifications(Contract()
                                .requires()
@@ -23,6 +26,9 @@ class Password(ValueObject):
                                       field='password',
                                       message='password should be numeric character'))
 
+    def _encrypt(self, value):
+        return hashlib.md5(value.encode()).hexdigest()
+
     def __str__(self):
         return self._value
 
@@ -33,6 +39,7 @@ class Password(ValueObject):
 class Email(ValueObject):
     def __init__(self, value):
         super().__init__()
+
         self._value = value
 
         self.add_notifications(Contract()

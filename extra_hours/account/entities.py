@@ -14,8 +14,17 @@ class User(Entity):
 
         self.add_notifications(email, password)
 
+    @property
+    def email(self):
+        return str(self._email)
+
+    @property
+    def password(self):
+        return str(self._password)
+
     def resets_password(self):
         new_password = str(uuid.uuid4()).lower()[:6]
+
         self._password = Password(new_password)
 
         self.add_notifications(new_password)
@@ -31,10 +40,8 @@ class User(Entity):
         self.add_notifications(new_password)
 
     def authenticate(self, password):
-        if password == self._password:
-            return
-
-        self.add_notifications(Notification('password', 'wrong password'))
+        if not password == self._password:
+            self.add_notifications(Notification('password', 'wrong password'))
 
     def to_dict(self):
         return {

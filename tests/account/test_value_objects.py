@@ -27,10 +27,15 @@ class PasswordTests(unittest.TestCase):
     def test_should_str_return_raw_password(self):
         password = Password(value='test123456')
 
-        self.assertEqual('test123456', str(password))
+        self.assertEqual(password._value, str(password))
 
     def test_should_eq_return_true_when_value_are_equals(self):
         self.assertEqual(Password(value='test123456'), Password(value='test123456'))
+
+    def test_should_encrypt_false_not_encrypt_value(self):
+        password = Password(value='test123456', encrypt=False)
+
+        self.assertEqual('test123456', str(password))
 
 
 class EmailTests(unittest.TestCase):
