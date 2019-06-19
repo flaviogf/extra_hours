@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import FastAPI, Header
 
 from extra_hours.account.gateways.api.views import init_account
@@ -16,7 +17,9 @@ class Config:
 
 
 def get_user(authorization=Header(None)):
-    return {'uid': authorization}
+    token_service = JwtTokenService(Config.SECRET_KEY)
+    user = token_service.decode(authorization)
+    return user or {}
 
 
 app = FastAPI(title='Extra Hours', version='v1')
@@ -54,28 +57,35 @@ init_account(app,
 
 
 def get_create_billing():
-    user_repository = billing_repositories.SqlAlchemyUserRepository()
+    user_repository = billing_repositories.SqlAlchemyUserRepository(uow.session)
     return CreateBilling(user_repository=user_repository)
 
 
 def get_confirm_receive_billing():
-    user_repository = billing_repositories.SqlAlchemyUserRepository()
+    user_repository = billing_repositories.SqlAlchemyUserRepository(uow.session)
     return ConfirmReceiveBilling(user_repository=user_repository)
 
 
 def get_cancel_receive_billing():
-    user_repository = billing_repositories.SqlAlchemyUserRepository()
+    user_repository = billing_repositories.SqlAlchemyUserRepository(uow.session)
     return CancelReceiveBilling(user_repository=user_repository)
 
 
 def get_update_receive_billing():
-    user_repository = billing_repositories.SqlAlchemyUserRepository()
+    user_repository = billing_repositories.SqlAlchemyUserRepository(uow.session)
     return UpdateBilling(user_repository=user_repository)
 
 
 init_billing(app,
+             uow=uow,
              get_create_billing=get_create_billing,
              get_confirm_receive_billing=get_confirm_receive_billing,
              get_cancel_receive_billing=get_cancel_receive_billing,
              get_update_billing=get_update_receive_billing,
              get_user=get_user)
+
+
+@app.get('/')
+def index():
+    data = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    return {'data': data, 'errors': []}

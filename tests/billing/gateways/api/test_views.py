@@ -1,6 +1,7 @@
 import json
 import unittest
 import uuid
+from contextlib import contextmanager
 from datetime import datetime
 from unittest.mock import Mock, PropertyMock
 
@@ -9,6 +10,11 @@ from pyflunt.notifications import Notification
 from starlette.testclient import TestClient
 
 from extra_hours.billing.gateways.api.views import init_billing
+
+
+@contextmanager
+def fake_uow():
+    yield
 
 
 def fake_get_user():
@@ -25,6 +31,7 @@ class BillingTestCase(unittest.TestCase):
         self._update_billing = Mock()
 
         init_billing(app,
+                     uow=fake_uow,
                      get_create_billing=Mock(return_value=self._create_billing),
                      get_confirm_receive_billing=Mock(return_value=self._confirm_receive_billing),
                      get_cancel_receive_billing=Mock(return_value=self._cancel_receive_billing),

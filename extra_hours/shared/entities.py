@@ -7,7 +7,7 @@ class Entity(Notifiable):
     def __init__(self, uid=None):
         super().__init__()
 
-        self._uid = uid or uuid.uuid4()
+        self._uid = uid or str(uuid.uuid4())
 
     @property
     def uid(self):

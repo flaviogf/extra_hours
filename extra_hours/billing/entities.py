@@ -18,6 +18,7 @@ def verify_billing_owner(func):
 class Billing(Entity):
     def __init__(self, summary, uid=None):
         super().__init__(uid=uid)
+
         self._summary = summary
         self._received_date = None
 
@@ -78,6 +79,7 @@ class Billing(Entity):
 class User(Entity):
     def __init__(self, billing=(), uid=None):
         super().__init__(uid=uid)
+
         self._billing = list(billing)
 
     @property

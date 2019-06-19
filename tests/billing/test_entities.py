@@ -103,7 +103,6 @@ class BillingTests(unittest.TestCase):
             'work_date': self._billing.work_date.strftime('%Y-%m-%d'),
             'received_date': self._billing.received_date.strftime('%Y-%m-%d'),
             'received': self._billing.received,
-
         }
 
         self.assertDictEqual(expected, self._billing.to_dict())
