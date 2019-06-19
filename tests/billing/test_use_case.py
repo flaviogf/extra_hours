@@ -24,19 +24,19 @@ class CreateBillingTests(unittest.TestCase):
                                              work_date=None)
 
         self._user_repository = Mock()
-        self._user_repository.find_by_id.return_value = User()
+        self._user_repository.get_by_id.return_value = User()
 
         self._create_billing = CreateBilling(self._user_repository)
 
     def test_should_ensure_find_user_by_id(self):
         self._create_billing.execute(self._command)
 
-        self._user_repository.find_by_id.assert_called_once()
+        self._user_repository.get_by_id.assert_called_once()
 
     def test_should_ensure_save_user(self):
         self._create_billing.execute(self._command)
 
-        self._user_repository.save.assert_called_once()
+        self._user_repository.add.assert_called_once()
 
     def test_should_is_valid_true_when_billing_is_valid(self):
         self._create_billing.execute(self._command)
@@ -44,7 +44,7 @@ class CreateBillingTests(unittest.TestCase):
         self.assertTrue(self._create_billing.is_valid)
 
     def test_should_is_valid_false_when_user_not_exists(self):
-        self._user_repository.find_by_id.return_value = None
+        self._user_repository.get_by_id.return_value = None
 
         self._create_billing.execute(self._command)
 
@@ -73,8 +73,8 @@ class ConfirmReceiveBillingTests(unittest.TestCase):
         self._billing = Billing(summary=self._billing_summary)
 
         self._user_repository = Mock()
-        self._user_repository.find_by_id.return_value = self._steve
-        self._user_repository.find_billing_by_id.return_value = self._billing
+        self._user_repository.get_by_id.return_value = self._steve
+        self._user_repository.get_billing_by_id.return_value = self._billing
 
         self._command = ConfirmReceiveBillingCommand(user_id=self._steve.uid,
                                                      billing_id=self._billing.uid)
@@ -84,27 +84,27 @@ class ConfirmReceiveBillingTests(unittest.TestCase):
     def test_should_ensure_find_user_by_id(self):
         self._confirm_receive_billing.execute(self._command)
 
-        self._user_repository.find_by_id.assert_called_once()
+        self._user_repository.get_by_id.assert_called_once()
 
     def test_should_ensure_find_billing_by_id(self):
         self._confirm_receive_billing.execute(self._command)
 
-        self._user_repository.find_billing_by_id.assert_called_once()
+        self._user_repository.get_billing_by_id.assert_called_once()
 
     def test_should_ensure_save_user(self):
         self._confirm_receive_billing.execute(self._command)
 
-        self._user_repository.save.assert_called_once()
+        self._user_repository.add.assert_called_once()
 
     def test_should_is_valid_false_when_user_not_exists(self):
-        self._user_repository.find_by_id.return_value = None
+        self._user_repository.get_by_id.return_value = None
 
         self._confirm_receive_billing.execute(self._command)
 
         self.assertFalse(self._confirm_receive_billing.is_valid)
 
     def test_should_is_valid_false_when_billing_not_exists(self):
-        self._user_repository.find_billing_by_id.return_value = None
+        self._user_repository.get_billing_by_id.return_value = None
 
         self._confirm_receive_billing.execute(self._command)
 
@@ -132,35 +132,35 @@ class CancelReceiveBillingTests(unittest.TestCase):
                                                     billing_id=self._billing.uid)
 
         self._user_repository = Mock()
-        self._user_repository.find_by_id.return_value = self._steve
-        self._user_repository.find_billing_by_id.return_value = self._billing
+        self._user_repository.get_by_id.return_value = self._steve
+        self._user_repository.get_billing_by_id.return_value = self._billing
 
         self._cancel_receive_billing = CancelReceiveBilling(self._user_repository)
 
     def test_should_ensure_find_user_by_id(self):
         self._cancel_receive_billing.execute(self._command)
 
-        self._user_repository.find_by_id.assert_called_once()
+        self._user_repository.get_by_id.assert_called_once()
 
     def test_should_ensure_find_billing_by_id(self):
         self._cancel_receive_billing.execute(self._command)
 
-        self._user_repository.find_billing_by_id.assert_called_once()
+        self._user_repository.get_billing_by_id.assert_called_once()
 
     def test_should_ensure_save_user(self):
         self._cancel_receive_billing.execute(self._command)
 
-        self._user_repository.save.assert_called_once()
+        self._user_repository.add.assert_called_once()
 
     def test_should_is_valid_false_when_user_not_exists(self):
-        self._user_repository.find_by_id.return_value = None
+        self._user_repository.get_by_id.return_value = None
 
         self._cancel_receive_billing.execute(self._command)
 
         self.assertFalse(self._cancel_receive_billing.is_valid)
 
     def test_should_is_valid_false_when_billing_not_exists(self):
-        self._user_repository.find_billing_by_id.return_value = None
+        self._user_repository.get_billing_by_id.return_value = None
 
         self._cancel_receive_billing.execute(self._command)
 
@@ -187,8 +187,8 @@ class UpdateBillingTests(unittest.TestCase):
         self._billing = Billing(summary=self._summary)
 
         self._user_repository = Mock()
-        self._user_repository.find_by_id.return_value = self._steve
-        self._user_repository.find_billing_by_id.return_value = self._billing
+        self._user_repository.get_by_id.return_value = self._steve
+        self._user_repository.get_billing_by_id.return_value = self._billing
 
         self._update_billing = UpdateBilling(self._user_repository)
 
@@ -202,27 +202,27 @@ class UpdateBillingTests(unittest.TestCase):
     def test_should_ensure_find_user_by_id(self):
         self._update_billing.execute(self._command)
 
-        self._user_repository.find_by_id.assert_called_once()
+        self._user_repository.get_by_id.assert_called_once()
 
     def test_should_ensure_find_billing_by_id(self):
         self._update_billing.execute(self._command)
 
-        self._user_repository.find_billing_by_id.assert_called_once()
+        self._user_repository.get_billing_by_id.assert_called_once()
 
     def test_should_ensure_save_user(self):
         self._update_billing.execute(self._command)
 
-        self._user_repository.save.assert_called_once()
+        self._user_repository.add.assert_called_once()
 
     def test_should_is_valid_false_when_user_not_exists(self):
-        self._user_repository.find_by_id.return_value = None
+        self._user_repository.get_by_id.return_value = None
 
         self._update_billing.execute(self._command)
 
         self.assertFalse(self._update_billing.is_valid)
 
     def test_should_is_valid_false_when_billing_not_exists(self):
-        self._user_repository.find_billing_by_id.return_value = None
+        self._user_repository.get_billing_by_id.return_value = None
 
         self._update_billing.execute(self._command)
 

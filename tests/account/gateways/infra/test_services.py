@@ -1,43 +1,44 @@
-import uuid
-from unittest.mock import Mock, PropertyMock
+import unittest
 
-from firebase_admin.auth import create_user, list_users, delete_user
+import jwt
 
 from extra_hours.account.entities import User
-from extra_hours.account.gateways.infra.services import FirebaseUserService
-from tests.account.gateways.infra.base import InfraTestCase
+from extra_hours.account.gateways.infra.services import JwtTokenService
+from extra_hours.account.value_objects import Email, Password
 
 
-class FirebaseUserServiceTests(InfraTestCase):
+class JwtTokenServiceTests(unittest.TestCase):
     def setUp(self):
-        create_user(email='captain@marvel.com', password='test12345', uid=str(uuid.uuid4()))
+        self._naruto = User(email=Email('naruto@uzumaki.com'), password=Password('test123'))
 
-        config = Mock()
+        self._secret = 'secret'
 
-        type(config).SECRET_KEY = PropertyMock(return_value='test')
+        self._jwt_token_service = JwtTokenService(self._secret)
 
-        self._user_service = FirebaseUserService(config)
+    def test_should_encode_return_jwt_token_with_user_uid(self):
+        token = self._jwt_token_service.encode(self._naruto)
 
-    def test_should_return_user_when_user_authenticated(self):
-        user, _ = self._user_service.sign_with_email_and_password(email='captain@marvel.com', password='test12345')
+        user = jwt.decode(token, self._secret, algorithms=['HS256'])
 
-        self.assertIsInstance(user, User)
+        self.assertEqual(self._naruto.uid, user.get('uid'))
 
-    def test_should_return_token_when_user_authenticated(self):
-        _, token = self._user_service.sign_with_email_and_password(email='captain@marvel.com', password='test12345')
+    def test_should_encode_return_jwt_token_with_user_email(self):
+        token = self._jwt_token_service.encode(self._naruto)
 
-        self.assertIsInstance(token, str)
+        user = jwt.decode(token, self._secret, algorithms=['HS256'])
 
-    def test_should_return_tuple_of_none_when_user_not_authenticated(self):
-        user, token = self._user_service.sign_with_email_and_password(email='flavio.fernandes@gmail.com',
-                                                                      password='test12345')
+        self.assertEqual(self._naruto.email, user.get('email'))
 
-        self.assertIsNone(user)
-        self.assertIsNone(token)
+    def test_should_decode_return_user_dict_with_uid(self):
+        jwt_token_service = JwtTokenService(self._secret)
 
-    def tearDown(self):
-        self._delete_all_users()
+        expected = {
+            'uid': self._naruto.uid,
+            'email': self._naruto.email
+        }
 
-    def _delete_all_users(self):
-        for user in list_users().iterate_all():
-            delete_user(user.uid)
+        token = jwt.encode(expected, self._secret, algorithm='HS256')
+
+        result = jwt_token_service.decode(token)
+
+        self.assertDictEqual(expected, result)

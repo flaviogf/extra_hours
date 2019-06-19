@@ -12,7 +12,7 @@ class EntityTest(unittest.TestCase):
     def test_should_contains_uid_when_entity_is_created(self):
         entity_one = Entity()
 
-        self.assertIsInstance(entity_one.uid, uuid.UUID)
+        self.assertIsInstance(entity_one.uid, str)
 
     def test_should_entity_are_equal_when_uid_are_equal(self):
         uid = uuid.uuid4()

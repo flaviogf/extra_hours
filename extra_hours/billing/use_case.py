@@ -11,7 +11,7 @@ class CreateBilling(UseCase):
         self._user_repository = user_repository
 
     def execute(self, command):
-        user = self._user_repository.find_by_id(command.user_id)
+        user = self._user_repository.get_by_id(command.user_id)
 
         if not user:
             self.add_notification(Notification('user', 'user not exists'))
@@ -30,7 +30,7 @@ class CreateBilling(UseCase):
 
         user.add_billing(billing)
 
-        self._user_repository.save(user)
+        self._user_repository.add(user)
 
 
 class ConfirmReceiveBilling(UseCase):
@@ -39,12 +39,12 @@ class ConfirmReceiveBilling(UseCase):
         self._user_repository = user_repository
 
     def execute(self, command):
-        user = self._user_repository.find_by_id(command.user_id)
+        user = self._user_repository.get_by_id(command.user_id)
 
         if not user:
             self.add_notification(Notification('user', 'user not exists'))
 
-        billing = self._user_repository.find_billing_by_id(command.billing_id)
+        billing = self._user_repository.get_billing_by_id(command.billing_id)
 
         if not billing:
             self.add_notification(Notification('billing', 'billing not exists'))
@@ -56,7 +56,7 @@ class ConfirmReceiveBilling(UseCase):
 
         user.confirm_receive(billing)
 
-        self._user_repository.save(user)
+        self._user_repository.add(user)
 
 
 class CancelReceiveBilling(UseCase):
@@ -65,12 +65,12 @@ class CancelReceiveBilling(UseCase):
         self._user_repository = user_repository
 
     def execute(self, command):
-        user = self._user_repository.find_by_id(command.user_id)
+        user = self._user_repository.get_by_id(command.user_id)
 
         if not user:
             self.add_notification(Notification('user', 'user not exists'))
 
-        billing = self._user_repository.find_billing_by_id(command.billing_id)
+        billing = self._user_repository.get_billing_by_id(command.billing_id)
 
         if not billing:
             self.add_notification(Notification('billing', 'billing not exists'))
@@ -82,7 +82,7 @@ class CancelReceiveBilling(UseCase):
 
         user.cancel_receive(billing)
 
-        self._user_repository.save(user)
+        self._user_repository.add(user)
 
 
 class UpdateBilling(UseCase):
@@ -91,12 +91,12 @@ class UpdateBilling(UseCase):
         self._user_repository = user_repository
 
     def execute(self, command):
-        user = self._user_repository.find_by_id(command.user_id)
+        user = self._user_repository.get_by_id(command.user_id)
 
         if not user:
             self.add_notification(Notification('user', 'user not exists'))
 
-        billing = self._user_repository.find_billing_by_id(command.billing_id)
+        billing = self._user_repository.get_billing_by_id(command.billing_id)
 
         if not billing:
             self.add_notification(Notification('billing', 'billing not exists'))
@@ -115,4 +115,4 @@ class UpdateBilling(UseCase):
 
         user.update_billing_summary(billing, billing_summary)
 
-        self._user_repository.save(user)
+        self._user_repository.add(user)

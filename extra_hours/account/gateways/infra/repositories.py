@@ -1,35 +1,30 @@
-from firebase_admin.auth import (AuthError,
-                                 create_user,
-                                 get_user_by_email,
-                                 update_user)
-
 from extra_hours.account.entities import User
+from extra_hours.account.value_objects import Email, Password
+from extra_hours.shared.gateways.infra.uow import UserTable
 
 
-class FirebaseUserRepository:
+class SqlAlchemyUserRepository:
+    def __init__(self, session):
+        self._session = session
+
+    def add(self, user):
+        user_table = self._session.query(UserTable).filter(UserTable.uid == user.uid).first()
+        user_table = user_table if user_table else UserTable()
+        user_table.uid = user.uid
+        user_table.email = user.email
+        user_table.password = user.password
+        self._session.add(user_table)
+
+    def get_by_email(self, email):
+        user_table = self._session.query(UserTable).filter(UserTable.email == email).first()
+
+        if not user_table:
+            return
+
+        return User(email=Email(user_table.email),
+                    password=Password(user_table.password, encrypt=False),
+                    uid=user_table.uid)
+
     def check_email(self, email):
-        try:
-            get_user_by_email(email)
-            return False
-        except (AuthError, ValueError):
-            return True
-
-    def save(self, user):
-        user_dict = user.to_dict()
-
-        try:
-            get_user_by_email(user_dict['email'])
-        except (AuthError, ValueError):
-            create_user(**user_dict)
-        else:
-            update_user(**user_dict)
-
-    def find_by_email(self, email):
-        try:
-            user = get_user_by_email(email)
-        except (AuthError, ValueError):
-            return None
-        else:
-            user = User(email=user.email, password='', uid=user.uid)
-
-            return user
+        user = self._session.query(UserTable).filter(UserTable.email == email).first()
+        return not user

@@ -8,6 +8,7 @@ from extra_hours.shared.use_case import UseCase
 class CreateUser(UseCase):
     def __init__(self, user_repository):
         super().__init__()
+
         self._user_repository = user_repository
 
     def execute(self, command):
@@ -15,40 +16,47 @@ class CreateUser(UseCase):
 
         if not email_available:
             self.add_notifications(Notification('email', 'email not is available'))
-            return
 
         email = Email(command.email)
+
         password = Password(command.password)
 
-        user = User(email=email,
-                    password=password)
+        user = User(email=email, password=password)
 
         self.add_notifications(user)
 
         if not self.is_valid:
             return
 
-        self._user_repository.save(user)
+        self._user_repository.add(user)
 
 
 class AuthenticateUser(UseCase):
-    def __init__(self, user_service):
+    def __init__(self, user_repository, token_service):
         super().__init__()
-        self._user_service = user_service
+
+        self._user_repository = user_repository
+        self._token_service = token_service
 
     def execute(self, command):
         email = Email(command.email)
+
+        user = self._user_repository.get_by_email(str(email))
+
+        if not user:
+            self.add_notification(Notification('user', 'user not exists'))
+            return None
+
         password = Password(command.password)
 
-        self.add_notifications(email, password)
+        user.authenticate(password)
+
+        self.add_notifications(user)
 
         if not self.is_valid:
-            return
+            return None
 
-        _, token = self._user_service.sign_with_email_and_password(str(email), str(password))
-
-        if not token:
-            self.add_notification(Notification('user', 'email or password invalid'))
+        token = self._token_service.encode(user)
 
         return token
 
@@ -56,55 +64,47 @@ class AuthenticateUser(UseCase):
 class ResetsPassword(UseCase):
     def __init__(self, user_repository):
         super().__init__()
+
         self._user_repository = user_repository
 
     def execute(self, command):
         email = Email(command.email)
 
-        self.add_notifications(email)
-
-        if not self.is_valid:
-            return
-
-        user = self._user_repository.find_by_email(str(email))
+        user = self._user_repository.get_by_email(str(email))
 
         if not user:
-            self.add_notification(Notification('user', 'user not found'))
+            self.add_notification(Notification('user', 'user not exists'))
             return
 
         user.resets_password()
 
-        self._user_repository.save(user)
+        self._user_repository.add(user)
 
 
 class ChangeUserPassword(UseCase):
-    def __init__(self, user_repository, user_service):
+    def __init__(self, user_repository):
         super().__init__()
+
         self._user_repository = user_repository
-        self._user_service = user_service
 
     def execute(self, command):
         email = Email(command.email)
-        old_password = Password(command.old_password)
 
-        self.add_notifications(email, old_password)
-
-        if not self.is_valid:
-            return
-
-        user, _ = self._user_service.sign_with_email_and_password(str(email), str(old_password))
+        user = self._user_repository.get_by_email(str(email))
 
         if not user:
-            self.add_notification(Notification('user', 'email or password invalid'))
+            self.add_notification(Notification('user', 'user not exists'))
             return
+
+        old_password = Password(command.old_password)
 
         new_password = Password(command.new_password)
 
-        user.change_password(new_password)
+        user.change_password(old_password, new_password)
 
         self.add_notifications(user)
 
         if not self.is_valid:
             return
 
-        self._user_repository.save(user)
+        self._user_repository.add(user)

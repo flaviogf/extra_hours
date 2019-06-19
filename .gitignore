@@ -105,7 +105,3 @@ venv.bak/
 
 # IDE
 .idea
-
-# Azure Web Apps
-requirements.txt
-.azure

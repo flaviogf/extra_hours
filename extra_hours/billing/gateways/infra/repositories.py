@@ -1,58 +1,47 @@
-import uuid
-from datetime import datetime
-
-from firebase_admin import firestore
-from firebase_admin.auth import AuthError, get_user
-
 from extra_hours.billing.entities import User, Billing
 from extra_hours.billing.value_objects import BillingSummary
+from extra_hours.shared.gateways.infra.uow import UserTable, BillingTable
 
 
-class FirebaseUserRepository:
-    def find_by_id(self, uid):
-        try:
-            user_record = get_user(str(uid))
-        except (AuthError, ValueError):
-            return None
-        else:
-            uid = uuid.UUID(user_record.uid)
-            user = User(uid=uid)
-            return user
+class SqlAlchemyUserRepository:
+    def __init__(self, session):
+        self._session = session
 
-    def save(self, user):
-        db = firestore.client()
+    def add(self, user):
+        for it in user.billing:
+            billing = self._session.query(BillingTable).filter(BillingTable.uid == it.uid).first()
 
-        user_collection = db.collection('user')
+            billing = billing or BillingTable()
 
-        user_document = user_collection.document(str(user.uid))
+            billing.uid = it.uid
+            billing.title = it.title
+            billing.description = it.description
+            billing.value = it.value
+            billing.work_date = it.work_date
+            billing.received_date = it.received_date
+            billing.user_uid = user.uid
 
-        billing_collection = user_document.collection('billing')
+            self._session.add(billing)
 
-        for billing in user.billing:
-            billing_document = billing_collection.document(str(billing.uid))
-            billing_document.set(billing.to_dict())
+    def get_by_id(self, uid):
+        user = self._session.query(UserTable).filter(UserTable.uid == uid).first()
 
-    def find_billing_by_id(self, billing_id):
-        db = firestore.client()
-
-        users = db.collection('user').list_documents()
-
-        billings = [b.get().to_dict() for u in users
-                    for b in u.collection('billing').list_documents()
-                    if b.id == str(billing_id)]
-
-        billing_dict = billings[0] if billings else None
-
-        if not billing_dict:
+        if not user:
             return
 
-        work_date = billing_dict['work_date']
+        return User(uid=user.uid)
 
-        work_date = datetime.strptime(work_date, '%Y-%m-%d')
+    def get_billing_by_id(self, billing_uid):
+        billing_table = self._session.query(BillingTable).filter(BillingTable.uid == billing_uid).first()
 
-        summary = BillingSummary(title=billing_dict['title'],
-                                 description=billing_dict['description'],
-                                 value=billing_dict['value'],
-                                 work_date=work_date)
+        if not billing_table:
+            return
 
-        return Billing(summary=summary, uid=billing_id)
+        summary = BillingSummary(title=billing_table.title,
+                                 description=billing_table.description,
+                                 value=billing_table.value,
+                                 work_date=billing_table.work_date)
+
+        billing = Billing(summary=summary, uid=billing_table.uid)
+
+        return billing

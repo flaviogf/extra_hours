@@ -1,96 +1,114 @@
 from datetime import datetime
 
-from flask import Blueprint, request, g
+from fastapi import Depends
+from pydantic import BaseModel
+from starlette.responses import Response
 
 from extra_hours.billing.commands import (CreateBillingCommand,
                                           ConfirmReceiveBillingCommand,
-                                          CancelReceiveBillingCommand, UpdateBillingCommand)
-from extra_hours.shared.gateways.api.responses import bad_request, created, ok
+                                          CancelReceiveBillingCommand,
+                                          UpdateBillingCommand)
 
 
-def init_billing_bp(app,
-                    *,
-                    get_create_billing,
-                    get_confirm_receive_billing,
-                    get_cancel_receive_billing,
-                    get_update_billing):
-    billing_bp = Blueprint('billing', __name__)
+class CreateBillingModel(BaseModel):
+    title: str = ''
+    description: str = ''
+    value: float = 0.0
+    work_date: datetime = None
 
-    @billing_bp.route('/api/v1/billing', methods=['post'])
-    def create_billing_view():
-        json = request.get_json()
 
-        work_date = json.get('work_date', None)
+class UpdateBillingModel(BaseModel):
+    title: str = ''
+    description: str = ''
+    value: float = 0.0
+    work_date: datetime = None
 
-        work_date = datetime.strptime(work_date, '%Y-%m-%d') if work_date else datetime.today()
 
-        command = CreateBillingCommand(user_id=g.user.get('uid', ''),
-                                       title=json.get('title', ''),
-                                       description=json.get('description', ''),
-                                       value=json.get('value', 0.0),
-                                       work_date=work_date)
+def init_billing(app, **kwargs):
+    uow = kwargs.get('uow')
+    get_create_billing = kwargs.get('get_create_billing')
+    get_confirm_receive_billing = kwargs.get('get_confirm_receive_billing')
+    get_cancel_receive_billing = kwargs.get('get_cancel_receive_billing')
+    get_update_billing = kwargs.get('get_update_billing')
+    get_user = kwargs.get('get_user')
 
-        create_billing = get_create_billing()
+    @app.post('/api/v1/billing', tags=['billing'])
+    def create_billing(model: CreateBillingModel, response: Response, user=Depends(get_user)):
+        with uow():
+            command = CreateBillingCommand(user_id=user.get('uid', ''),
+                                           title=model.title,
+                                           description=model.description,
+                                           value=model.value,
+                                           work_date=model.work_date)
 
-        create_billing.execute(command)
+            use_case = get_create_billing()
 
-        if not create_billing.is_valid:
-            return bad_request([n.message for n in create_billing.notifications])
+            use_case.execute(command)
 
-        return created('billing created')
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
 
-    @billing_bp.route('/api/v1/billing/<uuid:billing_id>/confirm-receive', methods=['post'])
-    def confirm_receive_billing_view(billing_id):
-        command = ConfirmReceiveBillingCommand(user_id=g.user.get('uid', ''),
-                                               billing_id=billing_id)
+                response.status_code = 400
 
-        confirm_receive_billing = get_confirm_receive_billing()
+                return {'data': None, 'errors': errors}
 
-        confirm_receive_billing.execute(command)
+            return {'data': 'billing created', 'errors': []}
 
-        if not confirm_receive_billing.is_valid:
-            return bad_request([n.message for n in confirm_receive_billing.notifications])
+    @app.post('/api/v1/billing/{billing_id}/confirm-receive', tags=['billing'])
+    def confirm_receive_billing(billing_id: str, response: Response, user=Depends(get_user)):
+        with uow():
+            command = ConfirmReceiveBillingCommand(user_id=user.get('uid', ''), billing_id=billing_id)
 
-        return ok('billing received confirmed')
+            use_case = get_confirm_receive_billing()
 
-    @billing_bp.route('/api/v1/billing/<uuid:billing_id>/cancel-receive', methods=['post'])
-    def cancel_receive_billing_view(billing_id):
-        command = CancelReceiveBillingCommand(user_id=g.user.get('uid', ''),
-                                              billing_id=billing_id)
+            use_case.execute(command)
 
-        cancel_receive_billing = get_cancel_receive_billing()
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
 
-        cancel_receive_billing.execute(command)
+                response.status_code = 400
 
-        if not cancel_receive_billing.is_valid:
-            return bad_request([n.message for n in cancel_receive_billing.notifications])
+                return {'data': None, 'errors': errors}
 
-        return ok('billing received canceled')
+            return {'data': 'billing received confirmed', 'errors': []}
 
-    @billing_bp.route('/api/v1/billing/<uuid:billing_id>', methods=['put'])
-    def update_billing_view(billing_id):
-        json = request.get_json()
+    @app.post('/api/v1/billing/{billing_id}/cancel-receive', tags=['billing'])
+    def cancel_receive_billing(billing_id: str, response: Response, user=Depends(get_user)):
+        with uow():
+            command = CancelReceiveBillingCommand(user_id=user.get('uid', ''), billing_id=billing_id)
 
-        work_date = json.get('work_date', None)
+            use_case = get_cancel_receive_billing()
 
-        work_date = datetime.strptime(work_date, '%Y-%m-%d') if work_date else datetime.today()
+            use_case.execute(command)
 
-        command = UpdateBillingCommand(user_id=g.user.get('uid', ''),
-                                       billing_id=billing_id,
-                                       title=json.get('title', ''),
-                                       description=json.get('description', ''),
-                                       value=json.get('value', 0.0),
-                                       work_date=work_date)
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
 
-        update_billing = get_update_billing()
+                response.status_code = 400
 
-        update_billing.execute(command)
+                return {'data': None, 'errors': errors}
 
-        if not update_billing.is_valid:
-            return bad_request([n.message for n in update_billing.notifications])
+            return {'data': 'billing received canceled', 'errors': []}
 
-        return ok('billing updated')
+    @app.put('/api/v1/billing/{billing_id}', tags=['billing'])
+    def update_billing(model: UpdateBillingModel, billing_id: str, response: Response, user=Depends(get_user)):
+        with uow():
+            command = UpdateBillingCommand(user_id=user.get('uid', ''),
+                                           billing_id=billing_id,
+                                           title=model.title,
+                                           description=model.description,
+                                           value=model.value,
+                                           work_date=model.work_date)
 
-    app.register_blueprint(billing_bp)
+            use_case = get_update_billing()
 
-    return billing_bp
+            use_case.execute(command)
+
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
+
+                response.status_code = 400
+
+                return {'data': None, 'errors': errors}
+
+            return {'data': 'billing updated', 'errors': []}

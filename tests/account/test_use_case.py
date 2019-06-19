@@ -10,6 +10,7 @@ from extra_hours.account.use_case import (AuthenticateUser,
                                           CreateUser,
                                           ResetsPassword,
                                           ChangeUserPassword)
+from extra_hours.account.value_objects import Email, Password
 
 
 class CreateUserTests(unittest.TestCase):
@@ -26,10 +27,10 @@ class CreateUserTests(unittest.TestCase):
 
         self._user_repository.check_email.assert_called_once()
 
-    def test_should_ensure_save_user(self):
+    def test_should_ensure_add_user(self):
         self._create_user.execute(self._command)
 
-        self._user_repository.save.assert_called_once()
+        self._user_repository.add.assert_called_once()
 
     def test_should_is_valid_false_when_command_not_is_valid(self):
         command = CreateUserCommand(email='captain',
@@ -57,46 +58,59 @@ class AuthenticateUserTests(unittest.TestCase):
         self._command = AuthenticateUserCommand(email='captain@marvel.com.br',
                                                 password='test123')
 
-        self._user_service = Mock()
+        self._user_repository = Mock()
+        self._token_service = Mock()
 
-        self._authenticate_user = AuthenticateUser(self._user_service)
+        self._authenticate_user = AuthenticateUser(user_repository=self._user_repository,
+                                                   token_service=self._token_service)
 
-    def test_should_ensure_sign_user_with_email_and_password(self):
-        steve = User(email='steve@gmail.com', password='')
-        token = 'xpto'
-
-        self._user_service.sign_with_email_and_password.return_value = steve, token
-
-        self._authenticate_user.execute(self._command)
-
-        self._user_service.sign_with_email_and_password.assert_called_with(self._command.email,
-                                                                           self._command.password)
-
-    def test_should_is_valid_false_when_user_not_is_authenticated(self):
-        self._user_service.sign_with_email_and_password.return_value = None, None
+    def test_should_is_valid_false_when_user_not_exists(self):
+        self._user_repository.get_by_email.return_value = None
 
         self._authenticate_user.execute(self._command)
 
         self.assertFalse(self._authenticate_user.is_valid)
 
-    def test_should_is_valid_false_when_email_not_is_valid(self):
-        command = AuthenticateUserCommand(email='test',
-                                          password='test123')
+    def test_should_is_valid_false_when_user_not_authenticate(self):
+        email = Email('captain@marvel.com')
 
-        self._authenticate_user.execute(command)
+        password = Password('test1234')
+
+        steve = User(email=email, password=password)
+
+        self._user_repository.get_by_email.return_value = steve
+
+        self._token_service.encode.return_value = 'xpto-xpto'
+
+        self._authenticate_user.execute(self._command)
 
         self.assertFalse(self._authenticate_user.is_valid)
 
-    def test_should_is_valid_false_when_password_not_is_valid(self):
-        command = AuthenticateUserCommand(email='captain@marvel.com',
-                                          password='test')
+    def test_should_is_valid_true_when_user_authenticate(self):
+        email = Email('captain@marvel.com')
 
-        self._authenticate_user.execute(command)
+        password = Password('test123')
 
-        self.assertFalse(self._authenticate_user.is_valid)
+        steve = User(email=email, password=password)
 
-    def test_should_return_id_token_when_authenticate(self):
-        self._user_service.sign_with_email_and_password.return_value = None, 'xpto-xpto'
+        self._user_repository.find_by_email.return_value = steve
+
+        self._token_service.encode.return_value = 'xpto-xpto'
+
+        self._authenticate_user.execute(self._command)
+
+        self.assertTrue(self._authenticate_user.is_valid)
+
+    def test_should_return_token_when_user_authenticate(self):
+        email = Email('captain@marvel.com')
+
+        password = Password('test123')
+
+        steve = User(email=email, password=password)
+
+        self._user_repository.find_by_email.return_value = steve
+
+        self._token_service.encode.return_value = 'xpto-xpto'
 
         token = self._authenticate_user.execute(self._command)
 
@@ -118,78 +132,58 @@ class ResetsPasswordTests(unittest.TestCase):
     def test_should_ensure_find_by_email(self):
         self._resets_password.execute(self._command)
 
-        self._user_repository.find_by_email.assert_called_with(self._command.email)
+        self._user_repository.get_by_email.assert_called_with(self._command.email)
 
-    def test_should_ensure_save_user(self):
+    def test_should_ensure_add_user(self):
         self._resets_password.execute(self._command)
 
-        self._user_repository.save.assert_called_once()
+        self._user_repository.add.assert_called_once()
 
     def test_should_valid_false_when_user_not_found(self):
-        self._user_repository.find_by_email.return_value = None
+        self._user_repository.get_by_email.return_value = None
 
         self._resets_password.execute(self._command)
-
-        self.assertFalse(self._resets_password.is_valid)
-
-    def test_should_valid_false_when_email_not_is_valid(self):
-        command = ResetsPasswordCommand(email='captain')
-
-        self._resets_password.execute(command)
 
         self.assertFalse(self._resets_password.is_valid)
 
 
 class ChangeUserPasswordTests(unittest.TestCase):
     def setUp(self):
-        self._user = User(email='captain@marvel.com',
-                          password='test12356')
-
-        token = 'xpto'
-
-        self._command = ChangeUserPasswordCommand(email='captain@marvel.com',
-                                                  old_password='test12356',
-                                                  new_password='test654321')
-
         self._user_repository = Mock()
-        self._user_service = Mock()
-        self._user_service.sign_with_email_and_password.return_value = self._user, token
 
-        self._change_password = ChangeUserPassword(self._user_repository,
-                                                   self._user_service)
+        self._change_password = ChangeUserPassword(user_repository=self._user_repository)
 
-    def test_should_ensure_sign_with_email_and_password(self):
-        self._change_password.execute(self._command)
+    def test_should_is_valid_false_when_old_password_is_wrong(self):
+        self._user_repository.get_by_email.return_value = User(email='captain@marvel.com',
+                                                               password='test12356')
 
-        self._user_service.sign_with_email_and_password.assert_called_with(self._command.email,
-                                                                           self._command.old_password)
+        command = ChangeUserPasswordCommand(email='captain@marvel.com',
+                                            old_password='test123567',
+                                            new_password='test654321')
 
-    def test_should_is_valid_false_when_user_not_is_authenticated(self):
-        self._user_service.sign_with_email_and_password.return_value = None, None
-
-        self._change_password.execute(self._command)
+        self._change_password.execute(command)
 
         self.assertFalse(self._change_password.is_valid)
 
-    def test_should_ensure_save_user(self):
-        self._change_password.execute(self._command)
+    def test_should_is_valid_false_when_user_not_exists(self):
+        self._user_repository.get_by_email.return_value = None
 
-        self._user_repository.save.assert_called_once()
-
-    def test_should_is_valid_false_when_new_password_not_is_valid(self):
         command = ChangeUserPasswordCommand(email='captain@marvel.com',
                                             old_password='test12356',
-                                            new_password='test')
+                                            new_password='test654321')
 
         self._change_password.execute(command)
 
         self.assertFalse(self._change_password.is_valid)
 
-    def test_should_is_valid_false_when_email_not_is_valid(self):
-        command = ChangeUserPasswordCommand(email='captain',
+    def test_should_ensure_add_user(self):
+        self._user_repository.find_by_email.return_value = User(email='captain@marvel.com',
+                                                                password='test12356')
+
+        command = ChangeUserPasswordCommand(email='captain@marvel.com',
                                             old_password='test12356',
-                                            new_password='test12356')
+                                            new_password='test654321')
 
         self._change_password.execute(command)
 
-        self.assertFalse(self._change_password.is_valid)
+        self._user_repository.add.assert_called_once()
