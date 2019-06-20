@@ -1,4 +1,5 @@
 import jwt
+from jwt import DecodeError
 
 
 class JwtTokenService:
@@ -14,4 +15,7 @@ class JwtTokenService:
         return jwt.encode(user_dict, key=self._secret, algorithm='HS256')
 
     def decode(self, token):
-        return jwt.decode(token, self._secret, algorithms=['HS256'])
+        try:
+            return jwt.decode(token, self._secret, algorithms=['HS256'])
+        except DecodeError:
+            return None
