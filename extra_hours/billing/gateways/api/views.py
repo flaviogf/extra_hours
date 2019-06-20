@@ -26,6 +26,7 @@ class UpdateBillingModel(BaseModel):
 
 def init_billing(app, **kwargs):
     uow = kwargs.get('uow')
+    user_repository = kwargs.get('user_repository')
     get_create_billing = kwargs.get('get_create_billing')
     get_confirm_receive_billing = kwargs.get('get_confirm_receive_billing')
     get_cancel_receive_billing = kwargs.get('get_cancel_receive_billing')
@@ -112,3 +113,19 @@ def init_billing(app, **kwargs):
                 return {'data': None, 'errors': errors}
 
             return {'data': 'billing updated', 'errors': []}
+
+    @app.get('/api/v1/billing/received')
+    def list_received_billing(user=Depends(get_user)):
+        received = user_repository.list_received_billing_list_query_result(user_uid=user.get('uid'))
+
+        data = [it._asdict() for it in received]
+
+        return {'data': data, 'errors': []}
+
+    @app.get('/api/v1/billing/not-received')
+    def list_received_billing(user=Depends(get_user)):
+        received = user_repository.list_not_received_billing_list_query_result(user_uid=user.get('uid'))
+
+        data = [it._asdict() for it in received]
+
+        return {'data': data, 'errors': []}

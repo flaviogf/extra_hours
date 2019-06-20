@@ -10,6 +10,15 @@ from pyflunt.notifications import Notification
 from starlette.testclient import TestClient
 
 from extra_hours.billing.gateways.api.views import init_billing
+from extra_hours.billing.queries import BillingListQueryResult
+
+FAKE_BILLING_LIST_QUERY_RESULT = [BillingListQueryResult(uid=str(uuid.uuid4()),
+                                                         title='gas station',
+                                                         description='yesterday',
+                                                         value=100.99,
+                                                         work_date='2019-10-10 10:10',
+                                                         received_date='2019-10-10 10:20',
+                                                         user_uid=str(uuid.uuid4()))]
 
 
 @contextmanager
@@ -29,9 +38,11 @@ class BillingTestCase(unittest.TestCase):
         self._confirm_receive_billing = Mock()
         self._cancel_receive_billing = Mock()
         self._update_billing = Mock()
+        self._user_repository = Mock()
 
         init_billing(app,
                      uow=fake_uow,
+                     user_repository=self._user_repository,
                      get_create_billing=Mock(return_value=self._create_billing),
                      get_confirm_receive_billing=Mock(return_value=self._confirm_receive_billing),
                      get_cancel_receive_billing=Mock(return_value=self._cancel_receive_billing),
@@ -243,3 +254,49 @@ class UpdateBillingTests(BillingTestCase):
         expected = ['user not exists']
 
         self.assertListEqual(expected, result)
+
+
+class ListReceivedBillingTests(BillingTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self._user_repository.list_received_billing_list_query_result.return_value = FAKE_BILLING_LIST_QUERY_RESULT
+
+    def test_should_list_received_billing_return_status_code_ok(self):
+        response = self._client.get('/api/v1/billing/received')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_list_received_billing_return_billing_list_query_result_list(self):
+        response = self._client.get('/api/v1/billing/received')
+
+        result = response.json()['data']
+
+        self.assertEqual(1, len(result))
+
+        for it in result:
+            with self.subTest():
+                self.assertIsInstance(it, dict)
+
+
+class ListNotReceivedBillingTests(BillingTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self._user_repository.list_not_received_billing_list_query_result.return_value = FAKE_BILLING_LIST_QUERY_RESULT
+
+    def test_should_list_not_received_billing_return_status_code_ok(self):
+        response = self._client.get('/api/v1/billing/not-received')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_list_not_received_billing_return_billing_list_query_result_list(self):
+        response = self._client.get('/api/v1/billing/not-received')
+
+        result = response.json()['data']
+
+        self.assertEqual(1, len(result))
+
+        for it in result:
+            with self.subTest():
+                self.assertIsInstance(it, dict)

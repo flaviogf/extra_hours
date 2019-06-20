@@ -9,7 +9,7 @@ Base = declarative_base()
 
 class Uow:
     def __init__(self, connection_string):
-        engine = create_engine(connection_string, echo=True)
+        engine = create_engine(connection_string, connect_args={'check_same_thread': False}, echo=True)
 
         Base.metadata.create_all(engine)
 

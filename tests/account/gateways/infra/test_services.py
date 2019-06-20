@@ -42,3 +42,10 @@ class JwtTokenServiceTests(unittest.TestCase):
         result = jwt_token_service.decode(token)
 
         self.assertDictEqual(expected, result)
+
+    def test_should_decode_return_none_when_token_not_is_valid(self):
+        jwt_token_service = JwtTokenService(self._secret)
+
+        token = jwt_token_service.decode('xpto')
+
+        self.assertIsNone(token)

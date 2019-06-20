@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from extra_hours.billing.entities import User, Billing
 from extra_hours.billing.gateways.infra.repositories import SqlAlchemyUserRepository
+from extra_hours.billing.queries import BillingListQueryResult
 from extra_hours.billing.value_objects import BillingSummary
 from extra_hours.shared.gateways.infra.uow import UserTable, BillingTable, Base
 
@@ -111,3 +112,40 @@ class SqlAlchemyUserRepositoryTests(unittest.TestCase):
         billing = self._user_repository.get_billing_by_id(billing_uid)
 
         self.assertIsNone(billing)
+
+    def test_should_list_received_billing_list_query_result_return_a_not_empty_list_when_has_received_billing(self):
+        user_uid = str(uuid.uuid4())
+
+        self._session.add(BillingTable(uid=str(uuid.uuid4()),
+                                       title='gas station',
+                                       description='yesterday',
+                                       value=100.99,
+                                       work_date=datetime.now(),
+                                       received_date=datetime.now(),
+                                       user_uid=user_uid))
+
+        billing = self._user_repository.list_received_billing_list_query_result(user_uid=user_uid)
+
+        self.assertEqual(1, len(billing))
+
+        for it in billing:
+            with self.subTest():
+                self.assertIsInstance(it, BillingListQueryResult)
+
+    def test_should_list_not_received_billing_list_query_result_return_a_not_empty_list_when_has_received_billing(self):
+        user_uid = str(uuid.uuid4())
+
+        self._session.add(BillingTable(uid=str(uuid.uuid4()),
+                                       title='gas station',
+                                       description='yesterday',
+                                       value=100.99,
+                                       work_date=datetime.now(),
+                                       user_uid=user_uid))
+
+        billing = self._user_repository.list_not_received_billing_list_query_result(user_uid=user_uid)
+
+        self.assertEqual(1, len(billing))
+
+        for it in billing:
+            with self.subTest():
+                self.assertIsInstance(it, BillingListQueryResult)
