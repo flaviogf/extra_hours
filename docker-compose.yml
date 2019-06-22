@@ -4,6 +4,6 @@ services:
   api:
     image: flaviogf/extra_hours:latest
     ports:
-      - 8000:8000
+      - 80:80
     entrypoint: |
-      pipenv run python server.py
+      pipenv run gunicorn server:app --bind 0.0.0.0:80 --worker-class sanic.worker.GunicornWorker
