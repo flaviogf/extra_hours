@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 pyflunt = "==1.0.0"
 sanic = "==19.6.0"
+gunicorn = "==19.9.0"
 
 [requires]
 python_version = "3.7"

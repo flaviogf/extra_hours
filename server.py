@@ -8,6 +8,6 @@ app = Sanic()
 
 @app.get('/')
 def status(request):
-    data = datetime.now().strftime('%Y-%m-%d %H:%M')
+    data = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     return json(body={'data': data, 'errors': []}, headers={'ip': request.ip})
