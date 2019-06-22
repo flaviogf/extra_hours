@@ -1,1 +1,1 @@
-web: gunicorn server:app --bind 0.0.0.0:80 --worker-class sanic.worker.GunicornWorker
+web: gunicorn server:app --worker-class sanic.worker.GunicornWorker
