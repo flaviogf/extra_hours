@@ -3,7 +3,17 @@ version: '3'
 services:
   api:
     image: flaviogf/extra_hours:latest
+    restart: always
     ports:
       - 80:80
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db/extra_hours
     entrypoint: |
       pipenv run gunicorn server:app --bind 0.0.0.0:80 --worker-class sanic.worker.GunicornWorker
+    depends_on:
+      - db
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
