@@ -48,3 +48,6 @@ class Password(ValueObject):
 
     def __str__(self):
         return self._value
+
+    def __eq__(self, other):
+        return str(self) == str(other)

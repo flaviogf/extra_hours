@@ -8,6 +8,7 @@ services:
       - 80:80
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db/extra_hours
+      - SECRET_KEY=E64165B86224B3B5F864848C4C2AA
     entrypoint: |
       pipenv run gunicorn server:app --bind 0.0.0.0:80 --worker-class sanic.worker.GunicornWorker
     depends_on:

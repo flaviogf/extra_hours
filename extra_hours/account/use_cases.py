@@ -29,3 +29,26 @@ class CreateUser(UseCase):
             return
 
         self._user_repository.save(user)
+
+
+class AuthenticateUser(UseCase):
+    def __init__(self, user_repository, token_service):
+        super().__init__()
+
+        self._user_repository = user_repository
+        self._token_service = token_service
+
+    def execute(self, command):
+        user = self._user_repository.get_by_email(command.email)
+
+        if not user:
+            self.add_notification(Notification('user', 'user not exists'))
+            return
+
+        user.authenticate(Password(command.password))
+
+        self.add_notifications(user)
+
+        token = self._token_service.encode(user)
+
+        return token

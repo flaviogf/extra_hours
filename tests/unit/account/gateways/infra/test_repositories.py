@@ -67,3 +67,17 @@ class SqlAlchemyUserRepositoryTests(unittest.TestCase):
         email_available = self._user_repository.check_email('naruto@uzuamki.com')
 
         self.assertFalse(email_available)
+
+    def test_should_get_by_email_return_user_when_exists(self):
+        naruto = UserTable(uid=str(uuid.uuid4()), email='naruto@uzumaki.com', password='test123')
+
+        self._session.add(naruto)
+
+        result = self._user_repository.get_by_email('naruto@uzumaki.com')
+
+        self.assertEqual(result, naruto)
+
+    def test_should_get_by_email_return_none_when_not_exists(self):
+        result = self._user_repository.get_by_email('naruto@uzumaki.com')
+
+        self.assertIsNone(result)

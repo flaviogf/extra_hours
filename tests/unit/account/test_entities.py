@@ -28,3 +28,23 @@ class UserTests(unittest.TestCase):
         naruto = User(email, password)
 
         self.assertFalse(naruto.is_valid)
+
+    def test_should_return_is_valid_true_when_authenticate(self):
+        email = Email('naruto@hokage.com')
+        password = Password('sasuke123')
+
+        naruto = User(email, password)
+
+        naruto.authenticate(Password('sasuke123'))
+
+        self.assertTrue(naruto.is_valid)
+
+    def test_should_return_is_valid_false_when_not_authenticate(self):
+        email = Email('naruto@hokage.com')
+        password = Password('sasuke123')
+
+        naruto = User(email, password)
+
+        naruto.authenticate(Password('sasuke321'))
+
+        self.assertFalse(naruto.is_valid)
