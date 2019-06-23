@@ -47,17 +47,18 @@ def init_account(**kwargs):
 
     @app.post('/api/v1/account/change-password')
     def change_user_password(request):
-        command = ChangeUserPasswordCommand(email=request.json.get('email'),
-                                            old_password=request.json.get('old_password'),
-                                            new_password=request.json.get('new_password'))
+        with uow():
+            command = ChangeUserPasswordCommand(email=request.json.get('email'),
+                                                old_password=request.json.get('old_password'),
+                                                new_password=request.json.get('new_password'))
 
-        use_case = get_change_user_password()
+            use_case = get_change_user_password()
 
-        use_case.execute(command)
+            use_case.execute(command)
 
-        if not use_case.is_valid:
-            errors = [n.message for n in use_case.notifications]
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
 
-            return json(body={'data': None, 'errors': errors}, status=400)
+                return json(body={'data': None, 'errors': errors}, status=400)
 
-        return json(body={'data': asdict(command), 'errors': []})
+            return json(body={'data': asdict(command), 'errors': []})
