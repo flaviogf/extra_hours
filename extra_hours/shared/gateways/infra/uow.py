@@ -46,7 +46,7 @@ class BillingTable(Base):
     uid = Column(String(36), primary_key=True)
     title = Column(String(250))
     description = Column(String(500))
-    value = Column(Numeric(precision=2, scale=8))
+    value = Column(Numeric(10, 2))
     work_date = Column(DateTime)
     receive_date = Column(DateTime, default=None, nullable=True)
     received = Column(Boolean, default=False)
