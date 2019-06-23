@@ -52,3 +52,27 @@ class AuthenticateUser(UseCase):
         token = self._token_service.encode(user)
 
         return token
+
+
+class ChangeUserPassword(UseCase):
+    def __init__(self, user_repository):
+        super().__init__()
+
+        self._user_repository = user_repository
+
+    def execute(self, command):
+        user = self._user_repository.get_by_email(command.email)
+
+        if not user:
+            self.add_notification(Notification('user', 'user not exists'))
+            return
+
+        user.change_password(old_password=Password(command.old_password),
+                             new_password=Password(command.new_password))
+
+        self.add_notifications(user)
+
+        if not self.is_valid:
+            return
+
+        self._user_repository.save(user)

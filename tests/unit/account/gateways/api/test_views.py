@@ -21,11 +21,13 @@ class AccountTestCase(unittest.TestCase):
 
         self._create_user = Mock()
         self._authenticate_user = Mock()
+        self._change_user_password = Mock()
 
         init_account(app=app,
                      uow=fake_uow,
                      get_create_user=Mock(return_value=self._create_user),
-                     get_authenticate_user=Mock(return_value=self._authenticate_user))
+                     get_authenticate_user=Mock(return_value=self._authenticate_user),
+                     get_change_user_password=Mock(return_value=self._change_user_password))
 
         self._client = SanicTestClient(app, port=None)
 
@@ -118,6 +120,57 @@ class AuthenticateUserTests(AccountTestCase):
         }
 
         _, response = self._client.post('/api/v1/account/authenticate', data=json.dumps(data))
+
+        result = response.json['errors']
+
+        expected = ['wrong password']
+
+        self.assertListEqual(expected, result)
+
+
+class ChangeUserPasswordTests(AccountTestCase):
+    def test_should_return_status_code_ok_when_use_case_is_valid(self):
+        data = {
+            'email': 'naruto@uzumaki.com',
+            'old_password': 'sasuke123',
+            'new_password': 'boruto123'
+        }
+
+        _, response = self._client.post('/api/v1/account/change-password', data=json.dumps(data))
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_return_status_code_bad_request_when_use_case_not_is_valid(self):
+        is_valid = False
+        wrong_password = Notification('password', 'wrong password')
+
+        type(self._change_user_password).is_valid = PropertyMock(return_value=is_valid)
+        type(self._change_user_password).notifications = PropertyMock(return_value=[wrong_password])
+
+        data = {
+            'email': 'naruto@uzumaki.com',
+            'old_password': 'sasuke123',
+            'new_password': 'boruto123'
+        }
+
+        _, response = self._client.post('/api/v1/account/change-password', data=json.dumps(data))
+
+        self.assertEqual(400, response.status_code)
+
+    def test_should_return_errors_list_when_use_case_not_is_valid(self):
+        is_valid = False
+        wrong_password = Notification('password', 'wrong password')
+
+        type(self._change_user_password).is_valid = PropertyMock(return_value=is_valid)
+        type(self._change_user_password).notifications = PropertyMock(return_value=[wrong_password])
+
+        data = {
+            'email': 'naruto@uzumaki.com',
+            'old_password': 'sasuke123',
+            'new_password': 'boruto123'
+        }
+
+        _, response = self._client.post('/api/v1/account/change-password', data=json.dumps(data))
 
         result = response.json['errors']
 

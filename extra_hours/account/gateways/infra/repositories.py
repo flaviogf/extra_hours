@@ -12,16 +12,13 @@ class SqlAlchemyUserRepository:
     def save(self, user):
         user_table = self._uow.session.query(UserTable).filter(UserTable.uid == user.uid).first()
 
-        user_table = user_table or UserTable(uid=user.uid,
-                                             email=user.email,
-                                             password=user.password)
+        user_table = user_table or UserTable()
+
+        user_table.uid = user.uid
+        user_table.email = user.email
+        user_table.password = user.password
 
         self._uow.session.add(user_table)
-
-    def check_email(self, email):
-        return not (self._uow.session
-                    .query(exists().where(UserTable.email == email))
-                    .scalar())
 
     def get_by_email(self, email):
         user_table = self._uow.session.query(UserTable).filter(UserTable.email == email).first()
@@ -34,3 +31,8 @@ class SqlAlchemyUserRepository:
                     uid=user_table.uid)
 
         return user
+
+    def check_email(self, email):
+        return not (self._uow.session
+                    .query(exists().where(UserTable.email == email))
+                    .scalar())

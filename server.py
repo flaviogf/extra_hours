@@ -7,7 +7,7 @@ from sanic.response import json
 from extra_hours.account.gateways.api.views import init_account
 from extra_hours.account.gateways.infra.repositories import SqlAlchemyUserRepository
 from extra_hours.account.gateways.infra.services import JwtTokenService
-from extra_hours.account.use_cases import CreateUser, AuthenticateUser
+from extra_hours.account.use_cases import CreateUser, AuthenticateUser, ChangeUserPassword
 from extra_hours.shared.gateways.infra.uow import Uow
 
 
@@ -32,10 +32,16 @@ def get_authenticate_user():
     return AuthenticateUser(user_repository, token_service)
 
 
+def get_change_user_password():
+    user_repository = SqlAlchemyUserRepository(uow)
+    return ChangeUserPassword(user_repository)
+
+
 init_account(app=app,
              uow=uow,
              get_create_user=get_create_user,
-             get_authenticate_user=get_authenticate_user)
+             get_authenticate_user=get_authenticate_user,
+             get_change_user_password=get_change_user_password)
 
 
 @app.get('/')

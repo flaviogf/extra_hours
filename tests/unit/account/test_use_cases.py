@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import Mock
 
-from extra_hours.account.commands import CreateUserCommand, AuthenticateUserCommand
+from extra_hours.account.commands import CreateUserCommand, AuthenticateUserCommand, ChangeUserPasswordCommand
 from extra_hours.account.entities import User
-from extra_hours.account.use_cases import CreateUser, AuthenticateUser
+from extra_hours.account.use_cases import CreateUser, AuthenticateUser, ChangeUserPassword
 from extra_hours.account.value_objects import Email, Password
 
 
@@ -115,3 +115,51 @@ class AuthenticateUserTests(unittest.TestCase):
         token = self._use_case.execute(command)
 
         self.assertEqual(token, None)
+
+
+class ChangeUserPasswordTests(unittest.TestCase):
+    def setUp(self):
+        self._user_repository = Mock()
+
+        self._use_case = ChangeUserPassword(self._user_repository)
+
+    def test_should_is_valid_true_when_change_password(self):
+        email = Email('naruto@uzumaki.com')
+        password = Password('sasuke123')
+        naruto = User(email, password)
+
+        self._user_repository.get_by_email.return_value = naruto
+
+        command = ChangeUserPasswordCommand(email='naruto@uzumaki.com',
+                                            old_password='sasuke123',
+                                            new_password='boruto123')
+
+        self._use_case.execute(command)
+
+        self.assertTrue(self._use_case.is_valid)
+
+    def test_should_is_valid_false_when_user_not_exists(self):
+        self._user_repository.get_by_email.return_value = None
+
+        command = ChangeUserPasswordCommand(email='naruto@uzumaki.com',
+                                            old_password='boruto123',
+                                            new_password='sasuke123')
+
+        self._use_case.execute(command)
+
+        self.assertFalse(self._use_case.is_valid)
+
+    def test_should_is_valid_false_when_not_change_password(self):
+        email = Email('naruto@uzumaki.com')
+        password = Password('sasuke123')
+        naruto = User(email, password)
+
+        self._user_repository.get_by_email.return_value = naruto
+
+        command = ChangeUserPasswordCommand(email='naruto@uzumaki.com',
+                                            old_password='boruto123',
+                                            new_password='sasuke123')
+
+        self._use_case.execute(command)
+
+        self.assertFalse(self._use_case.is_valid)

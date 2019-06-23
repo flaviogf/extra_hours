@@ -28,3 +28,11 @@ class User(Entity):
 
     def __eq__(self, other):
         return self.uid == other.uid
+
+    def change_password(self, old_password, new_password):
+        self.authenticate(old_password)
+
+        if not self.is_valid:
+            return
+
+        self._password = new_password
