@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, Column, String
+from sqlalchemy import create_engine, Column, String, Numeric, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -38,3 +38,20 @@ class UserTable(Base):
 
     def __repr__(self):
         return f"<User(uid='{self.uid}', email='{self.email}')>"
+
+
+class BillingTable(Base):
+    __tablename__ = 'billing'
+
+    uid = Column(String(36), primary_key=True)
+    title = Column(String(250))
+    description = Column(String(500))
+    value = Column(Numeric(precision=2, scale=8))
+    work_date = Column(DateTime)
+    receive_date = Column(DateTime, default=None, nullable=True)
+    received = Column(Boolean, default=False)
+
+    user_uid = Column(String(36), ForeignKey('users.uid'))
+
+    def __repr__(self):
+        return f"<Billing(uid='{self.uid}', received={self.received})>"

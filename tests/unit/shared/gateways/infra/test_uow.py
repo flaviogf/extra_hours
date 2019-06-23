@@ -1,10 +1,12 @@
 import unittest
 import uuid
+from decimal import Decimal
 from unittest.mock import Mock
 
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
-from extra_hours.shared.gateways.infra.uow import Uow, UserTable
+from extra_hours.shared.gateways.infra.uow import Uow, UserTable, BillingTable
 
 
 class UowTests(unittest.TestCase):
@@ -42,5 +44,22 @@ class UserTableTests(unittest.TestCase):
         expected = f"<User(uid='{naruto.uid}', email='{naruto.email}')>"
 
         result = str(naruto)
+
+        self.assertEqual(expected, result)
+
+
+class BillingTableTests(unittest.TestCase):
+    def test_should_return_str_repr(self):
+        yesterday = datetime.now() - timedelta(days=1)
+
+        billing = BillingTable(uid=str(uuid.uuid4()),
+                               title='Gas Station',
+                               description='Yesterday',
+                               value=Decimal(10),
+                               work_date=yesterday)
+
+        result = repr(billing)
+
+        expected = f"<Billing(uid='{billing.uid}', received={billing.received})>"
 
         self.assertEqual(expected, result)
