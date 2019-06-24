@@ -10,18 +10,20 @@ from extra_hours.billing.commands import AddBillingCommand
 def init_billing(**kwargs):
     app = kwargs.get('app')
     uow = kwargs.get('uow')
+    authorized = kwargs.get('authorized')
     get_add_billing = kwargs.get('get_add_billing')
 
     @app.post('/api/v1/billing')
-    def add_billing(request):
+    @authorized()
+    def add_billing(request, user):
         with uow():
             work_date = request.json.get('work_date')
             work_date = datetime.strptime(work_date, '%Y-%m-%d %H:%M:%S') if work_date else datetime.now()
 
             value = request.json.get('value')
-            value = Decimal(value) if str(value).isnumeric() else Decimal(0)
+            value = Decimal(value)
 
-            command = AddBillingCommand(user_uid=request.json.get('user_uid', ''),
+            command = AddBillingCommand(user_uid=user.get('uid', ''),
                                         title=request.json.get('title', ''),
                                         description=request.json.get('description', ''),
                                         value=value,

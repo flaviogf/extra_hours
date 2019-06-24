@@ -36,14 +36,14 @@ def init_account(**kwargs):
 
         use_case = get_authenticate_user()
 
-        use_case.execute(command)
+        token = use_case.execute(command)
 
         if not use_case.is_valid:
             errors = [n.message for n in use_case.notifications]
 
             return json(body={'data': None, 'errors': errors}, status=400)
 
-        return json(body={'data': asdict(command), 'errors': []})
+        return json(body={'data': token, 'errors': []})
 
     @app.post('/api/v1/account/change-password')
     def change_user_password(request):

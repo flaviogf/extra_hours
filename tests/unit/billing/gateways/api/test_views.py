@@ -3,6 +3,7 @@ import unittest
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timedelta
+from functools import wraps
 from unittest.mock import Mock, PropertyMock
 
 from pyflunt.notifications import Notification
@@ -17,6 +18,18 @@ def fake_uow():
     yield
 
 
+def fake_authorized():
+    def decorator(fn):
+        @wraps(fn)
+        async def wrapper(request, *args, **kwargs):
+            user = {'uid': str(uuid.uuid4())}
+            return fn(request, user, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 class BillingTestCase(unittest.TestCase):
     def setUp(self):
         app = Sanic()
@@ -25,6 +38,7 @@ class BillingTestCase(unittest.TestCase):
 
         init_billing(app=app,
                      uow=fake_uow,
+                     authorized=fake_authorized,
                      get_add_billing=Mock(return_value=self._add_billing))
 
         self._client = SanicTestClient(app, port=None)
@@ -35,7 +49,6 @@ class AddBillingTests(BillingTestCase):
         yesterday = datetime.now() + timedelta(days=1)
 
         data = {
-            'user_uid': str(uuid.uuid4()),
             'title': 'Gas Station',
             'description': 'Yesterday',
             'value': 10,
@@ -56,7 +69,6 @@ class AddBillingTests(BillingTestCase):
         yesterday = datetime.now() + timedelta(days=1)
 
         data = {
-            'user_uid': str(uuid.uuid4()),
             'title': 'Gas Station',
             'description': 'Yesterday',
             'value': 10,
@@ -77,7 +89,6 @@ class AddBillingTests(BillingTestCase):
         yesterday = datetime.now() + timedelta(days=1)
 
         data = {
-            'user_uid': str(uuid.uuid4()),
             'title': 'Gas Station',
             'description': 'Yesterday',
             'value': 10,

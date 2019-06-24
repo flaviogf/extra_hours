@@ -1,4 +1,6 @@
+from collections import defaultdict
 from datetime import datetime
+from functools import wraps
 from os import getenv
 
 from sanic import Sanic
@@ -22,6 +24,21 @@ class Config:
 app = Sanic()
 
 uow = Uow(connection_string=Config.DATABASE_URL, echo=True)
+
+
+def authorized():
+    def decorator(fn):
+        @wraps(fn)
+        async def wrapper(request, *args, **kwargs):
+            token_service = JwtTokenService(Config.SECRET_KEY)
+            token = request.token
+            user = token_service.decode(token)
+            user = user or defaultdict(str)
+            return fn(request, user, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def get_create_user():
@@ -54,6 +71,7 @@ def get_add_billing():
 
 init_billing(app=app,
              uow=uow,
+             authorized=authorized,
              get_add_billing=get_add_billing)
 
 
