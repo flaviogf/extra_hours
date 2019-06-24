@@ -87,3 +87,25 @@ class SqlAlchemyUserRepositoryTests(unittest.TestCase):
         user = self._user_repository.get_by_uid(user_uid)
 
         self.assertIsNone(user)
+
+    def test_should_get_billing_by_uid_return_billing_when_user_exists(self):
+        billing_uid = str(uuid.uuid4())
+
+        billing_table = BillingTable(uid=billing_uid,
+                                     title='',
+                                     description='',
+                                     value=Decimal(10),
+                                     work_date=datetime.now())
+
+        self._session.add(billing_table)
+
+        billing = self._user_repository.get_billing_by_uid(billing_uid)
+
+        self.assertIsInstance(billing, Billing)
+
+    def test_should_get_billing_by_uid_return_none_when_user_not_exists(self):
+        billing_uid = str(uuid.uuid4())
+
+        billing = self._user_repository.get_billing_by_uid(billing_uid)
+
+        self.assertIsNone(billing)

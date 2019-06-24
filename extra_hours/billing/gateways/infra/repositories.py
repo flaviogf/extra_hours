@@ -1,4 +1,4 @@
-from extra_hours.billing.entities import User
+from extra_hours.billing.entities import User, Billing
 from extra_hours.shared.gateways.infra.uow import BillingTable, UserTable
 
 
@@ -29,3 +29,16 @@ class SqlAlchemyUserRepository:
             return
 
         return User(uid=user_table.uid)
+
+    def get_billing_by_uid(self, uid):
+        billing = self._uow.session.query(BillingTable).filter(BillingTable.uid == uid).first()
+
+        if not billing:
+            return
+
+        return Billing(title=billing.title,
+                       description=billing.description,
+                       value=billing.value,
+                       work_date=billing.work_date,
+                       receive_date=billing.receive_date,
+                       uid=billing.uid)

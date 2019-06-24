@@ -35,11 +35,13 @@ class BillingTestCase(unittest.TestCase):
         app = Sanic()
 
         self._add_billing = Mock()
+        self._confirm_receive_billing = Mock()
 
         init_billing(app=app,
                      uow=fake_uow,
                      authorized=fake_authorized,
-                     get_add_billing=Mock(return_value=self._add_billing))
+                     get_add_billing=Mock(return_value=self._add_billing),
+                     get_confirm_receive_billing=Mock(return_value=self._confirm_receive_billing))
 
         self._client = SanicTestClient(app, port=None)
 
@@ -100,5 +102,44 @@ class AddBillingTests(BillingTestCase):
         result = response.json['errors']
 
         expected = ['title should be inform']
+
+        self.assertListEqual(expected, result)
+
+
+class ConfirmReceiveBillingTests(BillingTestCase):
+    def test_should_confirm_receive_billing_return_status_code_ok_when_use_case_is_valid(self):
+        billing_uid = str(uuid.uuid4())
+
+        _, response = self._client.post(f'/api/v1/billing/{billing_uid}/confirm-receive')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_confirm_receive_billing_return_status_code_bad_request_when_use_case_not_is_valid(self):
+        is_valid = False
+        billing_not_exists = Notification('billing', 'billing not exists')
+
+        type(self._confirm_receive_billing).is_valid = PropertyMock(return_value=is_valid)
+        type(self._confirm_receive_billing).notifications = PropertyMock(return_value=[billing_not_exists])
+
+        billing_uid = str(uuid.uuid4())
+
+        _, response = self._client.post(f'/api/v1/billing/{billing_uid}/confirm-receive')
+
+        self.assertEqual(400, response.status_code)
+
+    def test_should_confirm_receive_billing_return_errors_list_when_use_case_not_is_valid(self):
+        is_valid = False
+        billing_not_exists = Notification('billing', 'billing not exists')
+
+        type(self._confirm_receive_billing).is_valid = PropertyMock(return_value=is_valid)
+        type(self._confirm_receive_billing).notifications = PropertyMock(return_value=[billing_not_exists])
+
+        billing_uid = str(uuid.uuid4())
+
+        _, response = self._client.post(f'/api/v1/billing/{billing_uid}/confirm-receive')
+
+        result = response.json['errors']
+
+        expected = ['billing not exists']
 
         self.assertListEqual(expected, result)

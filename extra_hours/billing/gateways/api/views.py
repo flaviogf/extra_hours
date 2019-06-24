@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from sanic.response import json
 
-from extra_hours.billing.commands import AddBillingCommand
+from extra_hours.billing.commands import AddBillingCommand, ConfirmReceiveBillingCommand
 
 
 def init_billing(**kwargs):
@@ -12,6 +12,7 @@ def init_billing(**kwargs):
     uow = kwargs.get('uow')
     authorized = kwargs.get('authorized')
     get_add_billing = kwargs.get('get_add_billing')
+    get_confirm_receive_billing = kwargs.get('get_confirm_receive_billing')
 
     @app.post('/api/v1/billing')
     @authorized()
@@ -30,6 +31,24 @@ def init_billing(**kwargs):
                                         work_date=work_date)
 
             use_case = get_add_billing()
+
+            use_case.execute(command)
+
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
+
+                return json(body={'data': None, 'errors': errors}, status=400)
+
+            return json(body={'data': asdict(command), 'errors': []})
+
+    @app.post('/api/v1/billing/<billing_uid>/confirm-receive')
+    @authorized()
+    def confirm_receive_billing(request, user, billing_uid):
+        with uow():
+            command = ConfirmReceiveBillingCommand(user_uid=user.get('uid'),
+                                                   billing_uid=billing_uid)
+
+            use_case = get_confirm_receive_billing()
 
             use_case.execute(command)
 

@@ -10,3 +10,9 @@ class AddBillingCommand:
     description: str
     value: Decimal
     work_date: datetime
+
+
+@dataclass
+class ConfirmReceiveBillingCommand:
+    user_uid: str
+    billing_uid: str
