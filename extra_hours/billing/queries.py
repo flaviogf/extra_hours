@@ -3,7 +3,7 @@ from decimal import Decimal
 
 
 @dataclass
-class BillingReceivedListQueryResult:
+class BillingListQueryResult:
     uid: str
     title: str
     value: Decimal

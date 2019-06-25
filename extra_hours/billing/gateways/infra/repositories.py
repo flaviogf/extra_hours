@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from extra_hours.billing.entities import User, Billing
-from extra_hours.billing.queries import BillingReceivedListQueryResult
+from extra_hours.billing.queries import BillingListQueryResult
 from extra_hours.shared.gateways.infra.uow import BillingTable, UserTable
 
 
@@ -49,10 +49,21 @@ class SqlAlchemyUserRepository:
     def list_billing_received(self, user_uid, limit=10, offset=0):
         billing = (self._uow.session
                    .query(BillingTable)
-                   .filter(BillingTable.user_uid == user_uid)
+                   .filter(BillingTable.user_uid == user_uid, BillingTable.received.is_(True))
                    .limit(limit)
                    .offset(offset))
 
-        return [BillingReceivedListQueryResult(uid=it.uid,
-                                               title=it.title,
-                                               value=it.value) for it in billing]
+        return [BillingListQueryResult(uid=it.uid,
+                                       title=it.title,
+                                       value=it.value) for it in billing]
+
+    def list_billing_not_received(self, user_uid, limit=10, offset=0):
+        billing = (self._uow.session
+                   .query(BillingTable)
+                   .filter(BillingTable.user_uid == user_uid, BillingTable.received.is_(False))
+                   .limit(limit)
+                   .offset(offset))
+
+        return [BillingListQueryResult(uid=it.uid,
+                                       title=it.title,
+                                       value=it.value) for it in billing]

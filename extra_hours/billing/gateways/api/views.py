@@ -85,6 +85,16 @@ def init_billing(**kwargs):
         limit = request.args.get('limit', 10)
         offset = request.args.get('offset', 0)
 
-        users = user_repository.list_billing_received(user.get('uid'), limit=limit, offset=offset)
+        billing = user_repository.list_billing_received(user.get('uid'), limit=limit, offset=offset)
 
-        return json(body={'data': users})
+        return json(body={'data': billing, 'errors': []})
+
+    @app.get('/api/v1/billing/not-received')
+    @authorized()
+    def list_not_received(request, user):
+        limit = request.args.get('limit', 10)
+        offset = request.args.get('offset', 0)
+
+        billing = user_repository.list_billing_not_received(user.get('uid'), limit=limit, offset=offset)
+
+        return json(body={'data': billing, 'errors': []})

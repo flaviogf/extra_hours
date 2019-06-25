@@ -12,11 +12,11 @@ from sanic import Sanic
 from sanic.testing import SanicTestClient
 
 from extra_hours.billing.gateways.api.views import init_billing
-from extra_hours.billing.queries import BillingReceivedListQueryResult
+from extra_hours.billing.queries import BillingListQueryResult
 
-FAKE_BILLING_RECEIVED = BillingReceivedListQueryResult(uid=str(uuid.uuid4()),
-                                                       title='Gas Station',
-                                                       value=Decimal(10))
+FAKE_BILLING_LIST_QUERY_RESULT = BillingListQueryResult(uid=str(uuid.uuid4()),
+                                                        title='Gas Station',
+                                                        value=Decimal(10))
 
 
 @contextmanager
@@ -201,14 +201,34 @@ class ListReceivedTests(BillingTestCase):
         self.assertEqual(200, response.status_code)
 
     def test_should_list_received_return_a_list_of_billing_received(self):
-        self._user_repository.list_billing_received.return_value = [FAKE_BILLING_RECEIVED]
+        self._user_repository.list_billing_received.return_value = [FAKE_BILLING_LIST_QUERY_RESULT]
 
         _, response = self._client.get(f'/api/v1/billing/received')
 
         result = response.json['data']
 
-        expected = [{'uid': FAKE_BILLING_RECEIVED.uid,
-                     'title': FAKE_BILLING_RECEIVED.title,
-                     'value': FAKE_BILLING_RECEIVED.value}]
+        expected = [{'uid': FAKE_BILLING_LIST_QUERY_RESULT.uid,
+                     'title': FAKE_BILLING_LIST_QUERY_RESULT.title,
+                     'value': FAKE_BILLING_LIST_QUERY_RESULT.value}]
+
+        self.assertEqual(expected, result)
+
+
+class ListNotReceivedTests(BillingTestCase):
+    def test_should_list_not_received_return_status_code_ok(self):
+        _, response = self._client.get(f'/api/v1/billing/not-received')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_list_not_received_return_a_list_of_billing_received(self):
+        self._user_repository.list_billing_not_received.return_value = [FAKE_BILLING_LIST_QUERY_RESULT]
+
+        _, response = self._client.get(f'/api/v1/billing/not-received')
+
+        result = response.json['data']
+
+        expected = [{'uid': FAKE_BILLING_LIST_QUERY_RESULT.uid,
+                     'title': FAKE_BILLING_LIST_QUERY_RESULT.title,
+                     'value': FAKE_BILLING_LIST_QUERY_RESULT.value}]
 
         self.assertEqual(expected, result)
