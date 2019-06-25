@@ -3,6 +3,7 @@ import unittest
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timedelta
+from decimal import Decimal
 from functools import wraps
 from unittest.mock import Mock, PropertyMock
 
@@ -11,6 +12,11 @@ from sanic import Sanic
 from sanic.testing import SanicTestClient
 
 from extra_hours.billing.gateways.api.views import init_billing
+from extra_hours.billing.queries import BillingReceivedListQueryResult
+
+FAKE_BILLING_RECEIVED = BillingReceivedListQueryResult(uid=str(uuid.uuid4()),
+                                                       title='Gas Station',
+                                                       value=Decimal(10))
 
 
 @contextmanager
@@ -34,6 +40,7 @@ class BillingTestCase(unittest.TestCase):
     def setUp(self):
         app = Sanic()
 
+        self._user_repository = Mock()
         self._add_billing = Mock()
         self._confirm_receive_billing = Mock()
         self._cancel_receive_billing = Mock()
@@ -41,6 +48,7 @@ class BillingTestCase(unittest.TestCase):
         init_billing(app=app,
                      uow=fake_uow,
                      authorized=fake_authorized,
+                     user_repository=self._user_repository,
                      get_add_billing=Mock(return_value=self._add_billing),
                      get_confirm_receive_billing=Mock(return_value=self._confirm_receive_billing),
                      get_cancel_receive_billing=Mock(return_value=self._cancel_receive_billing))
@@ -184,3 +192,23 @@ class CancelReceiveBillingTests(BillingTestCase):
         expected = ['billing not exists']
 
         self.assertListEqual(expected, result)
+
+
+class ListReceivedTests(BillingTestCase):
+    def test_should_list_received_return_status_code_ok(self):
+        _, response = self._client.get(f'/api/v1/billing/received')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_list_received_return_a_list_of_billing_received(self):
+        self._user_repository.list_billing_received.return_value = [FAKE_BILLING_RECEIVED]
+
+        _, response = self._client.get(f'/api/v1/billing/received')
+
+        result = response.json['data']
+
+        expected = [{'uid': FAKE_BILLING_RECEIVED.uid,
+                     'title': FAKE_BILLING_RECEIVED.title,
+                     'value': FAKE_BILLING_RECEIVED.value}]
+
+        self.assertEqual(expected, result)

@@ -11,6 +11,7 @@ def init_billing(**kwargs):
     app = kwargs.get('app')
     uow = kwargs.get('uow')
     authorized = kwargs.get('authorized')
+    user_repository = kwargs.get('user_repository')
     get_add_billing = kwargs.get('get_add_billing')
     get_confirm_receive_billing = kwargs.get('get_confirm_receive_billing')
     get_cancel_receive_billing = kwargs.get('get_cancel_receive_billing')
@@ -77,3 +78,13 @@ def init_billing(**kwargs):
                 return json(body={'data': None, 'errors': errors}, status=400)
 
             return json(body={'data': asdict(command), 'errors': []})
+
+    @app.get('/api/v1/billing/received')
+    @authorized()
+    def list_received(request, user):
+        limit = request.args.get('limit', 10)
+        offset = request.args.get('offset', 0)
+
+        users = user_repository.list_billing_received(user.get('uid'), limit=limit, offset=offset)
+
+        return json(body={'data': users})

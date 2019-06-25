@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 from extra_hours.billing.entities import User, Billing
+from extra_hours.billing.queries import BillingReceivedListQueryResult
 from extra_hours.shared.gateways.infra.uow import BillingTable, UserTable
 
 
@@ -42,3 +45,14 @@ class SqlAlchemyUserRepository:
                        work_date=billing.work_date,
                        receive_date=billing.receive_date,
                        uid=billing.uid)
+
+    def list_billing_received(self, user_uid, limit=10, offset=0):
+        billing = (self._uow.session
+                   .query(BillingTable)
+                   .filter(BillingTable.user_uid == user_uid)
+                   .limit(limit)
+                   .offset(offset))
+
+        return [BillingReceivedListQueryResult(uid=it.uid,
+                                               title=it.title,
+                                               value=it.value) for it in billing]

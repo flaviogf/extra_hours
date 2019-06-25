@@ -82,6 +82,7 @@ def get_cancel_receive_billing():
 init_billing(app=app,
              uow=uow,
              authorized=authorized,
+             user_repository=billing_repositories.SqlAlchemyUserRepository(uow),
              get_add_billing=get_add_billing,
              get_confirm_receive_billing=get_confirm_receive_billing,
              get_cancel_receive_billing=get_cancel_receive_billing)
