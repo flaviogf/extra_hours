@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from extra_hours.billing.entities import User, Billing
 from extra_hours.billing.queries import BillingListQueryResult
 from extra_hours.shared.gateways.infra.uow import BillingTable, UserTable
@@ -33,8 +31,11 @@ class SqlAlchemyUserRepository:
 
         return User(uid=user_table.uid)
 
-    def get_billing_by_uid(self, uid):
-        billing = self._uow.session.query(BillingTable).filter(BillingTable.uid == uid).first()
+    def get_billing_by_uid(self, user, uid):
+        billing = (self._uow.session
+                   .query(BillingTable)
+                   .filter(BillingTable.uid == uid, BillingTable.user_uid == user.uid)
+                   .first())
 
         if not billing:
             return
@@ -67,3 +68,8 @@ class SqlAlchemyUserRepository:
         return [BillingListQueryResult(uid=it.uid,
                                        title=it.title,
                                        value=it.value) for it in billing]
+
+    def remove_billing(self, billing):
+        billing_table = self._uow.session.query(BillingTable).filter(BillingTable.uid == billing.uid).first()
+
+        self._uow.session.delete(billing_table)

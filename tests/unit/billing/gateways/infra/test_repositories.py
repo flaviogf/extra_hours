@@ -90,24 +90,33 @@ class SqlAlchemyUserRepositoryTests(unittest.TestCase):
         self.assertIsNone(user)
 
     def test_should_get_billing_by_uid_return_billing_when_user_exists(self):
+        user_uid = str(uuid.uuid4())
+
         billing_uid = str(uuid.uuid4())
 
         billing_table = BillingTable(uid=billing_uid,
                                      title='',
                                      description='',
                                      value=Decimal(10),
-                                     work_date=datetime.now())
+                                     work_date=datetime.now(),
+                                     user_uid=user_uid)
 
         self._session.add(billing_table)
 
-        billing = self._user_repository.get_billing_by_uid(billing_uid)
+        user = User(user_uid)
+
+        billing = self._user_repository.get_billing_by_uid(user, billing_uid)
 
         self.assertIsInstance(billing, Billing)
 
     def test_should_get_billing_by_uid_return_none_when_user_not_exists(self):
+        user_uid = str(uuid.uuid4())
+
         billing_uid = str(uuid.uuid4())
 
-        billing = self._user_repository.get_billing_by_uid(billing_uid)
+        user = User(user_uid)
+
+        billing = self._user_repository.get_billing_by_uid(user, billing_uid)
 
         self.assertIsNone(billing)
 
@@ -326,3 +335,36 @@ class SqlAlchemyUserRepositoryTests(unittest.TestCase):
         for it in billing_received:
             with self.subTest():
                 self.assertIsInstance(it, BillingListQueryResult)
+
+    def test_should_remove_billing(self):
+        user_uid = str(uuid.uuid4())
+
+        billing_uid = str(uuid.uuid4())
+
+        self._session.add(BillingTable(uid=billing_uid,
+                                       title='',
+                                       description='',
+                                       value=Decimal(10),
+                                       work_date=datetime.now(),
+                                       user_uid=user_uid))
+
+        self._session.add(BillingTable(uid=str(uuid.uuid4()),
+                                       title='',
+                                       description='',
+                                       value=Decimal(10),
+                                       work_date=datetime.now(),
+                                       user_uid=user_uid))
+
+        billing = Billing(title='',
+                          description='',
+                          value=Decimal(10),
+                          work_date=datetime.now(),
+                          uid=billing_uid)
+
+        self._user_repository.remove_billing(billing)
+
+        result = len(self._session.query(BillingTable).all())
+
+        expected = 1
+
+        self.assertEqual(expected, result)

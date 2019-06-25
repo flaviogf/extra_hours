@@ -4,7 +4,8 @@ from decimal import Decimal
 
 from sanic.response import json
 
-from extra_hours.billing.commands import AddBillingCommand, ConfirmReceiveBillingCommand, CancelReceiveBillingCommand
+from extra_hours.billing.commands import AddBillingCommand, ConfirmReceiveBillingCommand, CancelReceiveBillingCommand, \
+    RemoveBillingCommand
 
 
 def init_billing(**kwargs):
@@ -15,6 +16,7 @@ def init_billing(**kwargs):
     get_add_billing = kwargs.get('get_add_billing')
     get_confirm_receive_billing = kwargs.get('get_confirm_receive_billing')
     get_cancel_receive_billing = kwargs.get('get_cancel_receive_billing')
+    get_remove_billing = kwargs.get('get_remove_billing')
 
     @app.post('/api/v1/billing')
     @authorized()
@@ -98,3 +100,21 @@ def init_billing(**kwargs):
         billing = user_repository.list_billing_not_received(user.get('uid'), limit=limit, offset=offset)
 
         return json(body={'data': billing, 'errors': []})
+
+    @app.delete('/api/v1/billing/<billing_uid>')
+    @authorized()
+    def remove_billing(request, user, billing_uid):
+        with uow():
+            command = RemoveBillingCommand(user_uid=user.get('uid'),
+                                           billing_uid=billing_uid)
+
+            use_case = get_remove_billing()
+
+            use_case.execute(command)
+
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
+
+                return json(body={'data': None, 'errors': errors}, status=400)
+
+            return json(body={'data': asdict(command), 'errors': []})

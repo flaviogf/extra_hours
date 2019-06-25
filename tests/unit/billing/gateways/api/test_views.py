@@ -44,6 +44,7 @@ class BillingTestCase(unittest.TestCase):
         self._add_billing = Mock()
         self._confirm_receive_billing = Mock()
         self._cancel_receive_billing = Mock()
+        self._remove_billing = Mock()
 
         init_billing(app=app,
                      uow=fake_uow,
@@ -51,7 +52,8 @@ class BillingTestCase(unittest.TestCase):
                      user_repository=self._user_repository,
                      get_add_billing=Mock(return_value=self._add_billing),
                      get_confirm_receive_billing=Mock(return_value=self._confirm_receive_billing),
-                     get_cancel_receive_billing=Mock(return_value=self._cancel_receive_billing))
+                     get_cancel_receive_billing=Mock(return_value=self._cancel_receive_billing),
+                     get_remove_billing=Mock(return_value=self._remove_billing))
 
         self._client = SanicTestClient(app, port=None)
 
@@ -232,3 +234,42 @@ class ListNotReceivedTests(BillingTestCase):
                      'value': FAKE_BILLING_LIST_QUERY_RESULT.value}]
 
         self.assertEqual(expected, result)
+
+
+class RemoveBillingTests(BillingTestCase):
+    def test_should_remove_billing_return_status_code_ok_when_use_case_is_valid(self):
+        billing_uid = str(uuid.uuid4())
+
+        _, response = self._client.delete(f'/api/v1/billing/{billing_uid}')
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_remove_billing_return_status_code_bad_request_when_use_case_not_is_valid(self):
+        is_valid = False
+        billing_not_exists = Notification('billing', 'billing not exists')
+
+        type(self._remove_billing).is_valid = PropertyMock(return_value=is_valid)
+        type(self._remove_billing).notifications = PropertyMock(return_value=[billing_not_exists])
+
+        billing_uid = str(uuid.uuid4())
+
+        _, response = self._client.delete(f'/api/v1/billing/{billing_uid}')
+
+        self.assertEqual(400, response.status_code)
+
+    def test_should_remove_billing_return_errors_list_when_use_case_not_is_valid(self):
+        is_valid = False
+        billing_not_exists = Notification('billing', 'billing not exists')
+
+        type(self._remove_billing).is_valid = PropertyMock(return_value=is_valid)
+        type(self._remove_billing).notifications = PropertyMock(return_value=[billing_not_exists])
+
+        billing_uid = str(uuid.uuid4())
+
+        _, response = self._client.delete(f'/api/v1/billing/{billing_uid}')
+
+        result = response.json['errors']
+
+        expected = ['billing not exists']
+
+        self.assertListEqual(expected, result)

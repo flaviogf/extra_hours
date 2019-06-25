@@ -22,3 +22,9 @@ class ConfirmReceiveBillingCommand:
 class CancelReceiveBillingCommand:
     user_uid: str
     billing_uid: str
+
+
+@dataclass
+class RemoveBillingCommand:
+    user_uid: str
+    billing_uid: str
