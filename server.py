@@ -12,7 +12,7 @@ from extra_hours.account.gateways.infra.services import JwtTokenService
 from extra_hours.account.use_cases import CreateUser, AuthenticateUser, ChangeUserPassword
 from extra_hours.billing.gateways.api.views import init_billing
 from extra_hours.billing.gateways.infra import repositories as billing_repositories
-from extra_hours.billing.use_cases import AddBilling, ConfirmReceiveBilling
+from extra_hours.billing.use_cases import AddBilling, ConfirmReceiveBilling, CancelReceiveBilling
 from extra_hours.shared.gateways.infra.uow import Uow
 
 
@@ -74,11 +74,17 @@ def get_confirm_receive_billing():
     return ConfirmReceiveBilling(user_repository)
 
 
+def get_cancel_receive_billing():
+    user_repository = billing_repositories.SqlAlchemyUserRepository(uow)
+    return CancelReceiveBilling(user_repository)
+
+
 init_billing(app=app,
              uow=uow,
              authorized=authorized,
              get_add_billing=get_add_billing,
-             get_confirm_receive_billing=get_confirm_receive_billing)
+             get_confirm_receive_billing=get_confirm_receive_billing,
+             get_cancel_receive_billing=get_cancel_receive_billing)
 
 
 @app.get('/')

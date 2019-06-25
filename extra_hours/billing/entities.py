@@ -1,6 +1,6 @@
+from datetime import datetime
 from decimal import Decimal
 
-from datetime import datetime
 from pyflunt.validations import Contract
 
 from extra_hours.shared.entities import Entity
@@ -16,11 +16,16 @@ class User(Entity):
     def billing(self):
         return tuple(self._billing)
 
+    @staticmethod
+    def confirm_receive_billing(billing):
+        billing.confirm_receive()
+
+    @staticmethod
+    def cancel_receive_billing(billing):
+        billing.cancel_receive()
+
     def add_billing(self, billing):
         self._billing.append(billing)
-
-    def confirm_receive_billing(self, billing):
-        billing.confirm_receive()
 
 
 class Billing(Entity):
@@ -75,6 +80,9 @@ class Billing(Entity):
 
     def confirm_receive(self):
         self._receive_date = datetime.now()
+
+    def cancel_receive(self):
+        self._receive_date = None
 
     def _receive_date_is_valid(self):
         return True if not self._receive_date or self._receive_date > self._work_date else False
