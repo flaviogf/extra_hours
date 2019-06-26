@@ -56,7 +56,11 @@ class SqlAlchemyUserRepository:
 
         return [BillingListQueryResult(uid=it.uid,
                                        title=it.title,
-                                       value=it.value) for it in billing]
+                                       description=it.description,
+                                       value=it.value,
+                                       work_date=it.work_date,
+                                       receive_date=it.receive_date,
+                                       received=it.received) for it in billing]
 
     def list_billing_not_received(self, user_uid, limit=10, offset=0):
         billing = (self._uow.session
@@ -67,7 +71,11 @@ class SqlAlchemyUserRepository:
 
         return [BillingListQueryResult(uid=it.uid,
                                        title=it.title,
-                                       value=it.value) for it in billing]
+                                       description=it.description,
+                                       value=it.value,
+                                       work_date=it.work_date,
+                                       receive_date=it.receive_date,
+                                       received=it.received) for it in billing]
 
     def remove_billing(self, billing):
         billing_table = self._uow.session.query(BillingTable).filter(BillingTable.uid == billing.uid).first()

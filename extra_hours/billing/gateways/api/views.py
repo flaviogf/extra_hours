@@ -5,7 +5,7 @@ from decimal import Decimal
 from sanic.response import json
 
 from extra_hours.billing.commands import AddBillingCommand, ConfirmReceiveBillingCommand, CancelReceiveBillingCommand, \
-    RemoveBillingCommand
+    RemoveBillingCommand, UpdateBillingCommand
 
 
 def init_billing(**kwargs):
@@ -17,6 +17,7 @@ def init_billing(**kwargs):
     get_confirm_receive_billing = kwargs.get('get_confirm_receive_billing')
     get_cancel_receive_billing = kwargs.get('get_cancel_receive_billing')
     get_remove_billing = kwargs.get('get_remove_billing')
+    get_update_billing = kwargs.get('get_update_billing')
 
     @app.post('/api/v1/billing')
     @authorized()
@@ -109,6 +110,34 @@ def init_billing(**kwargs):
                                            billing_uid=billing_uid)
 
             use_case = get_remove_billing()
+
+            use_case.execute(command)
+
+            if not use_case.is_valid:
+                errors = [n.message for n in use_case.notifications]
+
+                return json(body={'data': None, 'errors': errors}, status=400)
+
+            return json(body={'data': asdict(command), 'errors': []})
+
+    @app.put('/api/v1/billing/<billing_uid>')
+    @authorized()
+    def update_billing(request, user, billing_uid):
+        with uow():
+            work_date = request.json.get('work_date')
+            work_date = datetime.strptime(work_date, '%Y-%m-%d %H:%M:%S') if work_date else datetime.now()
+
+            value = request.json.get('value')
+            value = Decimal(value)
+
+            command = UpdateBillingCommand(user_uid=user.get('uid'),
+                                           billing_uid=billing_uid,
+                                           title=request.json.get('title'),
+                                           description=request.json.get('description'),
+                                           value=value,
+                                           work_date=work_date)
+
+            use_case = get_update_billing()
 
             use_case.execute(command)
 

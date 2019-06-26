@@ -28,3 +28,13 @@ class CancelReceiveBillingCommand:
 class RemoveBillingCommand:
     user_uid: str
     billing_uid: str
+
+
+@dataclass
+class UpdateBillingCommand:
+    user_uid: str
+    billing_uid: str
+    title: str
+    description: str
+    value: Decimal
+    work_date: datetime

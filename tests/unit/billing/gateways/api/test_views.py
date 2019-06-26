@@ -16,7 +16,11 @@ from extra_hours.billing.queries import BillingListQueryResult
 
 FAKE_BILLING_LIST_QUERY_RESULT = BillingListQueryResult(uid=str(uuid.uuid4()),
                                                         title='Gas Station',
-                                                        value=Decimal(10))
+                                                        description='Yesterday',
+                                                        value=Decimal(10),
+                                                        work_date=datetime.now().timestamp(),
+                                                        receive_date=None,
+                                                        received=False)
 
 
 @contextmanager
@@ -45,6 +49,7 @@ class BillingTestCase(unittest.TestCase):
         self._confirm_receive_billing = Mock()
         self._cancel_receive_billing = Mock()
         self._remove_billing = Mock()
+        self._update_billing = Mock()
 
         init_billing(app=app,
                      uow=fake_uow,
@@ -53,7 +58,8 @@ class BillingTestCase(unittest.TestCase):
                      get_add_billing=Mock(return_value=self._add_billing),
                      get_confirm_receive_billing=Mock(return_value=self._confirm_receive_billing),
                      get_cancel_receive_billing=Mock(return_value=self._cancel_receive_billing),
-                     get_remove_billing=Mock(return_value=self._remove_billing))
+                     get_remove_billing=Mock(return_value=self._remove_billing),
+                     get_update_billing=Mock(return_value=self._update_billing))
 
         self._client = SanicTestClient(app, port=None)
 
@@ -211,7 +217,11 @@ class ListReceivedTests(BillingTestCase):
 
         expected = [{'uid': FAKE_BILLING_LIST_QUERY_RESULT.uid,
                      'title': FAKE_BILLING_LIST_QUERY_RESULT.title,
-                     'value': FAKE_BILLING_LIST_QUERY_RESULT.value}]
+                     'description': FAKE_BILLING_LIST_QUERY_RESULT.description,
+                     'value': FAKE_BILLING_LIST_QUERY_RESULT.value,
+                     'work_date': FAKE_BILLING_LIST_QUERY_RESULT.work_date,
+                     'receive_date': FAKE_BILLING_LIST_QUERY_RESULT.receive_date,
+                     'received': FAKE_BILLING_LIST_QUERY_RESULT.received}]
 
         self.assertEqual(expected, result)
 
@@ -231,7 +241,11 @@ class ListNotReceivedTests(BillingTestCase):
 
         expected = [{'uid': FAKE_BILLING_LIST_QUERY_RESULT.uid,
                      'title': FAKE_BILLING_LIST_QUERY_RESULT.title,
-                     'value': FAKE_BILLING_LIST_QUERY_RESULT.value}]
+                     'description': FAKE_BILLING_LIST_QUERY_RESULT.description,
+                     'value': FAKE_BILLING_LIST_QUERY_RESULT.value,
+                     'work_date': FAKE_BILLING_LIST_QUERY_RESULT.work_date,
+                     'receive_date': FAKE_BILLING_LIST_QUERY_RESULT.receive_date,
+                     'received': FAKE_BILLING_LIST_QUERY_RESULT.received}]
 
         self.assertEqual(expected, result)
 
@@ -267,6 +281,69 @@ class RemoveBillingTests(BillingTestCase):
         billing_uid = str(uuid.uuid4())
 
         _, response = self._client.delete(f'/api/v1/billing/{billing_uid}')
+
+        result = response.json['errors']
+
+        expected = ['billing not exists']
+
+        self.assertListEqual(expected, result)
+
+
+class UpdateBillingTests(BillingTestCase):
+    def test_should_update_billing_return_status_code_ok_when_use_case_is_valid(self):
+        billing_uid = str(uuid.uuid4())
+
+        data = {
+            'billing_uid': str(uuid.uuid4()),
+            'title': 'Gas Station',
+            'description': 'yesterday',
+            'value': 10,
+            'work_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        _, response = self._client.put(f'/api/v1/billing/{billing_uid}', data=json.dumps(data))
+
+        self.assertEqual(200, response.status_code)
+
+    def test_should_update_billing_return_status_code_bad_request_when_use_case_not_is_valid(self):
+        is_valid = False
+        billing_not_exists = Notification('billing', 'billing not exists')
+
+        type(self._update_billing).is_valid = PropertyMock(return_value=is_valid)
+        type(self._update_billing).notifications = PropertyMock(return_value=[billing_not_exists])
+
+        billing_uid = str(uuid.uuid4())
+
+        data = {
+            'billing_uid': str(uuid.uuid4()),
+            'title': 'Gas Station',
+            'description': 'yesterday',
+            'value': 10,
+            'work_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        _, response = self._client.put(f'/api/v1/billing/{billing_uid}', data=json.dumps(data))
+
+        self.assertEqual(400, response.status_code)
+
+    def test_should_update_billing_return_errors_list_when_use_case_not_is_valid(self):
+        is_valid = False
+        billing_not_exists = Notification('billing', 'billing not exists')
+
+        type(self._update_billing).is_valid = PropertyMock(return_value=is_valid)
+        type(self._update_billing).notifications = PropertyMock(return_value=[billing_not_exists])
+
+        billing_uid = str(uuid.uuid4())
+
+        data = {
+            'billing_uid': str(uuid.uuid4()),
+            'title': 'Gas Station',
+            'description': 'yesterday',
+            'value': 10,
+            'work_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        _, response = self._client.put(f'/api/v1/billing/{billing_uid}', data=json.dumps(data))
 
         result = response.json['errors']
 
